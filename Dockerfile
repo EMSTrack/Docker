@@ -134,7 +134,7 @@ RUN chown -R mosquitto:mosquitto /var/lib/mosquitto
 # Setup mqttclient
 COPY supervisor/mqttclient.conf /etc/supervisor/conf.d/mqttclient.conf
 
-# Expose the mosquitto posts
+# Expose the mosquitto ports
 EXPOSE 1883
 EXPOSE 8883
 EXPOSE 8884
