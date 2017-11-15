@@ -31,10 +31,12 @@ arguments are:
 
 ## Create self-signed certificates
 
-### as per https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl:
+As per: 
 
-    cd certificates
-    openssl req -config example-com.conf -new -x509 -sha256 -newkey rsa:2048 -nodes -keyout example-com.key.pem -days 365 -out example-com.cert.pem
+https://mcuoneclipse.com/2017/04/14/enable-secure-communication-with-tls-and-the-mosquitto-broker
+
+Make sure to add the certificates to your mqtt client and browser if
+you do not want to run into security issues.
 
 ## Other contents
 
