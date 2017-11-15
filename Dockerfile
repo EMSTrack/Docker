@@ -23,6 +23,7 @@ RUN apt-get install -y postgresql postgresql-contrib
 RUN apt-get install -y postgis
 RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
 RUN apt-get install -y openssl cmake
+RUN apt-get install -y supervisor
 
 RUN apt-get install -y vim sudo
 
@@ -131,6 +132,9 @@ RUN chown -R mosquitto:mosquitto /var/log/mosquitto
 RUN mkdir /var/lib/mosquitto
 RUN chown -R mosquitto:mosquitto /var/lib/mosquitto
 
+# Setup mqttclient
+COPY supervisor/mqttclient.conf /etc/supervisor/conf.d/mqttclient.conf
+
 # Expose the mosquitto posts
 EXPOSE 1883
 EXPOSE 8883
@@ -156,4 +160,5 @@ VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
 
 CMD service postgresql start &&\
     service mosquitto start &&\
+    service supervisor start &&\
     python manage.py runserver 0.0.0.0:8000
