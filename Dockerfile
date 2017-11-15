@@ -26,17 +26,18 @@ RUN apt-get install -y openssl cmake
 
 RUN apt-get install -y vim sudo
 
+# Import source code
+WORKDIR /src
+
 # Clone main repository
 RUN git clone https://github.com/EMSTrack/WebServerAndClient
-RUN mv WebServerAndClient app
-
-# Set working directorya
-WORKDIR /app
+RUN mv WebServerAndClient /app
 
 # Install python requirements
+WORKDIR /app
 RUN pip install -r requirements.txt
 
-# Build from source code
+# Build libraries
 WORKDIR /src
 
 # Download source code for libwebsockets
@@ -140,12 +141,13 @@ EXPOSE 8000
 WORKDIR /app
 
 # Configure application
-COPY docs/db.json docker/db.json
+COPY django/db.json db.json
 RUN service postgresql start &&\
     service mosquitto start &&\
     nohup bash -c "python manage.py runserver 2>&1 &" &&\
     python manage.py flush --no-input &&\
-    python manage.py loaddata docker/db.json
+    python manage.py loaddata db.json
+RUN rm db.json
 
 # Add VOLUMEs to allow backup of config, logs and databases
 VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
