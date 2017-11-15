@@ -14,7 +14,7 @@ ARG HOSTNAME=" 'cruzroja.ucsd.edu', 'localhost', '127.0.0.1' "
 ARG MQTT_USERNAME=admin
 ARG MQTT_PASSWORD=cruzrojaadmin
 ARG MQTT_EMAIL=webmaster@cruzroja.ucsd.edu
-ARG MQTT_CLIENTID=django
+ARG MQTT_CLIENTID=mqttclient
 
 # Install dependencies
 RUN apt-get update -y
@@ -36,7 +36,6 @@ RUN mv WebServerAndClient /app
 
 # Install python requirements
 WORKDIR /app
-RUN git checkout docker
 RUN pip install -r requirements.txt
 
 # Build libraries
