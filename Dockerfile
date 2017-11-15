@@ -35,6 +35,7 @@ RUN mv WebServerAndClient /app
 
 # Install python requirements
 WORKDIR /app
+RUN git checkout docker
 RUN pip install -r requirements.txt
 
 # Build libraries
