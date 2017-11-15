@@ -16,12 +16,6 @@ ARG MQTT_PASSWORD=cruzrojaadmin
 ARG MQTT_EMAIL=webmaster@cruzroja.ucsd.edu
 ARG MQTT_CLIENTID=django
 
-# Set working directory
-WORKDIR /app
-
-# Add code to the container
-ADD ./eng100l /app/
-
 # Install dependencies
 RUN apt-get update -y
 RUN apt-get install -y apt-utils git
@@ -31,6 +25,13 @@ RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
 RUN apt-get install -y openssl cmake
 
 RUN apt-get install -y vim sudo
+
+# Clone main repository
+RUN git clone https://github.com/EMSTrack/WebServerAndClient
+RUN mv WebServerAndClient app
+
+# Set working directorya
+WORKDIR /app
 
 # Install python requirements
 RUN pip install -r requirements.txt
@@ -79,7 +80,7 @@ RUN ldconfig
 
 # Setup Postgres
 WORKDIR /app
-COPY docker/postgresql/init.psql init.psql
+COPY postgresql/init.psql init.psql
 RUN sed -i'' \
         -e 's/\[username\]/'"$USERNAME"'/g' \
         -e 's/\[password\]/'"$PASSWORD"'/g' \
@@ -93,7 +94,7 @@ RUN rm init.psql
 
 # Setup Django
 WORKDIR /app
-COPY docker/settings.py eng100l/settings.py
+COPY django/settings.py eng100l/settings.py
 RUN sed -i'' \
         -e 's/\[username\]/'"$USERNAME"'/g' \
         -e 's/\[password\]/'"$PASSWORD"'/g' \
@@ -111,16 +112,16 @@ RUN /etc/init.d/postgresql start &&\
     python manage.py migrate
 
 # Install certificates
-COPY docker/certificates/example-com.ca.crt /etc/certificates/example.com/example-com.ca.crt
-COPY docker/certificates/example-com.srv.crt /etc/certificates/example.com/example-com.srv.crt
-COPY docker/certificates/example-com.srv.key /etc/certificates/example.com/example-com.srv.key
+COPY certificates/example-com.ca.crt /etc/certificates/example.com/example-com.ca.crt
+COPY certificates/example-com.srv.crt /etc/certificates/example.com/example-com.srv.crt
+COPY certificates/example-com.srv.key /etc/certificates/example.com/example-com.srv.key
 
 # Setup mosquitto
 RUN useradd -M mosquitto
 RUN usermod -L mosquitto
-COPY docker/mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
-COPY docker/mosquitto/conf.d /etc/mosquitto/conf.d
-COPY docker/init.d/mosquitto /etc/init.d/mosquitto
+COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
+COPY mosquitto/conf.d /etc/mosquitto/conf.d
+COPY init.d/mosquitto /etc/init.d/mosquitto
 RUN chmod +x /etc/init.d/mosquitto
 RUN update-rc.d mosquitto defaults
 RUN mkdir /var/log/mosquitto
