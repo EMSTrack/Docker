@@ -4,6 +4,13 @@ FROM python:3.6
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
 
+ARG BRANCH=master
+ARG HOME=/app
+
+ARG CA_CRT=certificates/example-com.ca.crt
+ARG SRV_CRT=certificates/example-com.srv.crt
+ARG SRV_KEY=certificates/example-com.srv.key
+
 ARG USERNAME=cruzroja
 ARG PASSWORD=password
 ARG DATABASE=ambulances
@@ -32,10 +39,14 @@ WORKDIR /src
 
 # Clone main repository
 RUN git clone https://github.com/EMSTrack/WebServerAndClient
-RUN mv WebServerAndClient /app
+RUN mv WebServerAndClient $HOME
+# Make sure it is in the correct branch
+
+WORKDIR $HOME
+RUN git checkout $BRANCH
 
 # Install python requirements
-WORKDIR /app
+WORKDIR $HOME
 RUN pip install -r requirements.txt
 
 # Build libraries
@@ -65,7 +76,7 @@ RUN sed -e 's/WITH_SRV:=yes/WITH_SRV:=no/' \
         -e 's/WITH_WEBSOCKETS:=no/WITH_WEBSOCKETS:=yes/' \
 	-e 's/WITH_DOCS:=yes/WITH_DOCS:=no/' \
 	config.mk.in > config.mk
-RUN make binary install 
+RUN make binary install
 
 # Configure and build mosquitto-auth-plug
 WORKDIR /src/mosquitto-auth-plug
@@ -81,7 +92,7 @@ RUN make; cp auth-plug.so /usr/local/lib
 RUN ldconfig
 
 # Setup Postgres
-WORKDIR /app
+WORKDIR $HOME
 COPY postgresql/init.psql init.psql
 RUN sed -i'' \
         -e 's/\[username\]/'"$USERNAME"'/g' \
@@ -89,13 +100,14 @@ RUN sed -i'' \
         -e 's/\[database\]/'"$DATABASE"'/g' \
 	init.psql
 USER postgres
-RUN /etc/init.d/postgresql start &&\
+RUN service postgresql start &&\
+    sleep 5 &&\
     psql -f init.psql
 USER root
 RUN rm init.psql
 
 # Setup Django
-WORKDIR /app
+WORKDIR $HOME
 COPY django/settings.py eng100l/settings.py
 RUN sed -i'' \
         -e 's/\[username\]/'"$USERNAME"'/g' \
@@ -108,15 +120,16 @@ RUN sed -i'' \
         -e 's/\[mqtt-email\]/'"$MQTT_EMAIL"'/g' \
         -e 's/\[mqtt-clientid\]/'"$MQTT_CLIENTID"'/g' \
 	eng100l/settings.py
-RUN /etc/init.d/postgresql start &&\
+RUN service postgresql start &&\
+    sleep 10 &&\
     python manage.py makemigrations &&\
     python manage.py makemigrations ambulances &&\
     python manage.py migrate
 
 # Install certificates
-COPY certificates/example-com.ca.crt /etc/certificates/example.com/example-com.ca.crt
-COPY certificates/example-com.srv.crt /etc/certificates/example.com/example-com.srv.crt
-COPY certificates/example-com.srv.key /etc/certificates/example.com/example-com.srv.key
+COPY $CA_CRT /etc/certificates/ca.crt
+COPY $SRV_CRT /etc/certificates/srv.crt
+COPY $SRV_KEY /etc/certificates/srv.key
 
 # Setup mosquitto
 RUN useradd -M mosquitto
@@ -142,12 +155,13 @@ EXPOSE 8884
 EXPOSE 8000
 
 # Go back to home
-WORKDIR /app
+WORKDIR $HOME
 
 # Configure application
 COPY django/db.json db.json
 RUN service postgresql start &&\
     service mosquitto start &&\
+    sleep 10 &&\
     nohup bash -c "python manage.py runserver 2>&1 &" &&\
     python manage.py flush --no-input &&\
     python manage.py loaddata db.json
@@ -155,9 +169,11 @@ RUN rm db.json
 
 # Add VOLUMEs to allow backup of config, logs and databases
 VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
-        "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto" ]
+        "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto", \
+        "/etc/certificates" ]
 
 CMD service postgresql start &&\
     service mosquitto start &&\
+    sleep 10 &&\
     service supervisor start &&\
     python manage.py runserver 0.0.0.0:8000
