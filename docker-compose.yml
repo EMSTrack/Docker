@@ -1,0 +1,19 @@
+version: '3'
+services:
+  cruzroja:
+    build:
+      context: .
+      args:
+        BRANCH: devel
+    ports:
+     - "8000:8000"
+     - "8883:8883"
+     - "8884:8884"
+    volumes:
+     - ./volumes/etc/postgresql:/etc/postgresql
+     - ./volumes/var/log/postgresql:/var/log/postgresql
+     - ./volumes/var/lib/postgresql:/var/lib/postgresql
+     - ./volumes/etc/mosquitto:/etc/mosquitto
+     - ./volumes/var/log/mosquitto:/var/log/mosquitto
+     - ./volumes/var/lib/mosquitto:/var/lib/mosquitto
+     - ./volumes/etc/certificates:/etc/certificates

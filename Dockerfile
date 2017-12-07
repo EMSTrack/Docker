@@ -16,7 +16,7 @@ ARG PASSWORD=password
 ARG DATABASE=ambulances
 
 ARG SECRET_KEY=CH4NG3M3!
-ARG HOSTNAME=" 'cruzroja.ucsd.edu', 'localhost', '127.0.0.1' "
+ARG HOSTNAME=" 'localhost', '127.0.0.1' "
 
 ARG MQTT_USERNAME=admin
 ARG MQTT_PASSWORD=cruzrojaadmin
@@ -107,7 +107,8 @@ RUN sed -i'' \
 USER postgres
 RUN service postgresql start &&\
     sleep 5 &&\
-    psql -f init.psql
+    psql -f init.psql &&\
+    service postgresql stop
 USER root
 RUN rm init.psql
 
@@ -129,7 +130,8 @@ RUN service postgresql start &&\
     sleep 10 &&\
     DJANGO_ENABLE_SIGNALS="False" python manage.py makemigrations &&\
     DJANGO_ENABLE_SIGNALS="False" python manage.py makemigrations ambulances &&\
-    DJANGO_ENABLE_SIGNALS="False" python manage.py migrate
+    DJANGO_ENABLE_SIGNALS="False" python manage.py migrate &&\
+    service postgresql stop
 
 # Install certificates
 COPY $CA_CRT /etc/certificates/ca.crt
@@ -169,7 +171,9 @@ RUN service postgresql start &&\
     sleep 10 &&\
     nohup bash -c "python manage.py runserver 2>&1 &" &&\
     python manage.py flush --no-input &&\
-    python manage.py loaddata db.json
+    python manage.py loaddata db.json &&\
+    service mosquitto stop &&\
+    service postgresql stop
 RUN rm db.json
 
 # Add VOLUMEs to allow backup of config, logs and databases
