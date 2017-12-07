@@ -25,7 +25,7 @@ ARG MQTT_CLIENTID=mqttclient
 
 # Install dependencies
 RUN apt-get update -y
-RUN apt-get install -y apt-utils git
+RUN apt-get install -y apt-utils coreutils git
 RUN apt-get install -y postgresql postgresql-contrib
 RUN apt-get install -y postgis
 RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
@@ -48,6 +48,9 @@ RUN git checkout $BRANCH
 # Install python requirements
 WORKDIR $HOME
 RUN pip install -r requirements.txt
+
+# Install uwsgi
+RUN pip install uwsgi
 
 # Build libraries
 WORKDIR /src
@@ -168,21 +171,30 @@ WORKDIR $HOME
 COPY django/db.json db.json
 RUN service postgresql start &&\
     service mosquitto start &&\
-    sleep 10 &&\
-    nohup bash -c "python manage.py runserver 2>&1 &" &&\
-    python manage.py flush --no-input &&\
-    python manage.py loaddata db.json &&\
+    sleep 5 &&\
+    DJANGO_ENABLE_SIGNALS="False" python manage.py flush --no-input &&\
+    DJANGO_ENABLE_SIGNALS="False" python manage.py loaddata db.json &&\
+    sleep 5 &&\
     service mosquitto stop &&\
     service postgresql stop
 RUN rm db.json
 
+# Install nginx
+RUN apt-get install -y nginx
+
 # Add VOLUMEs to allow backup of config, logs and databases
 VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
         "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto", \
+	"/var/log/django", \
         "/etc/certificates" ]
 
 CMD service postgresql start &&\
     service mosquitto start &&\
-    sleep 10 &&\
+    sleep 5 &&\
+    uwsgi --http :8000 --module eng100l.wsgi &&\
+    sleep 5 &&\
+    python manage.py mqttseed &&\
     service supervisor start &&\
-    python manage.py runserver 0.0.0.0:8000
+    tail -f /var/log/django.out
+
+#    nohup bash -c "python manage.py runserver 0.0.0.0:8000 >/var/log/django.out 2>&1 &" &&\
