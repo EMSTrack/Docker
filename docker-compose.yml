@@ -10,10 +10,19 @@ services:
      - "8883:8883"
      - "8884:8884"
     volumes:
-     - ./volumes/etc/postgresql:/etc/postgresql
-     - ./volumes/var/log/postgresql:/var/log/postgresql
-     - ./volumes/var/lib/postgresql:/var/lib/postgresql
-     - ./volumes/etc/mosquitto:/etc/mosquitto
-     - ./volumes/var/log/mosquitto:/var/log/mosquitto
-     - ./volumes/var/lib/mosquitto:/var/lib/mosquitto
-     - ./volumes/etc/certificates:/etc/certificates
+     - postgresql:/var/lib/postgresql
+     - postgresql_etc:/etc/postgresql
+     - postgresql_log:/var/log/postgresql
+     - mosquitto_etc:/etc/mosquitto
+     - mosquitto_log:/var/log/mosquitto
+     - mosquitto_lib:/var/lib/mosquitto
+     - certificates:/etc/certificates
+
+volumes:
+  postgresql:
+  postgresql_etc:
+  postgresql_log:
+  mosquitto_etc:
+  mosquitto_log:
+  mosquitto_lib:
+  certificates:
