@@ -91,6 +91,11 @@ RUN make; cp auth-plug.so /usr/local/lib
 # Run ldconfig
 RUN ldconfig
 
+# Install wait-for-it
+WORKDIR $HOME
+COPY bash/wait_for_postgres.sh wait_for_postgres.sh
+RUN chmod +x wait_for_postgres.sh
+
 # Setup Postgres
 WORKDIR $HOME
 COPY postgresql/init.psql init.psql
@@ -122,9 +127,9 @@ RUN sed -i'' \
 	eng100l/settings.py
 RUN service postgresql start &&\
     sleep 10 &&\
-    python manage.py makemigrations &&\
-    python manage.py makemigrations ambulances &&\
-    python manage.py migrate
+    DJANGO_ENABLE_SIGNALS="False" python manage.py makemigrations &&\
+    DJANGO_ENABLE_SIGNALS="False" python manage.py makemigrations ambulances &&\
+    DJANGO_ENABLE_SIGNALS="False" python manage.py migrate
 
 # Install certificates
 COPY $CA_CRT /etc/certificates/ca.crt
