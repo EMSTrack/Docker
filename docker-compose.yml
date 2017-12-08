@@ -3,7 +3,6 @@ services:
   cruzroja:
     build:
       context: .
-      args:
     ports:
      - "1883:1883"
      - "8000:8000"
