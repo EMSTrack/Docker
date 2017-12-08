@@ -4,7 +4,6 @@ services:
     build:
       context: .
       args:
-        BRANCH: devel
     ports:
      - "1883:1883"
      - "8000:8000"
