@@ -182,19 +182,41 @@ RUN rm db.json
 # Install nginx
 RUN apt-get install -y nginx
 
+# Collect static
+RUN DJANGO_ENABLE_SIGNALS="False" python manage.py collectstatic
+
+# Configure nginx
+COPY nginx/nginx.conf /etc/nginx/sites-enabled/default
+COPY nginx/uwsgi_params eng100l/uwsgi_params
+
+# Enable nginx service
+RUN update-rc.d nginx enable
+
+# Change ownership of app
+RUN cd /; chown -R www-data:www-data app
+
 # Add VOLUMEs to allow backup of config, logs and databases
 VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
         "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto", \
 	"/var/log/django", \
         "/etc/certificates" ]
 
-CMD service postgresql start &&\
+CMD echo "> Starting postgres" &&\
+    service postgresql start &&\
+    echo "> Starting mosquitto" &&\
     service mosquitto start &&\
     sleep 5 &&\
-    uwsgi --http :8000 --module eng100l.wsgi &&\
+    echo "> Starting uWSGI" &&\
+    nohup bash -c "uwsgi --socket eng100l.sock --module eng100l.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
+    echo "> Starting nginx" &&\
+    service nginx start &&\
     sleep 5 &&\
+    echo "> Starting mqttseed" &&\
     python manage.py mqttseed &&\
+    echo "> Starting mqttclient" &&\
     service supervisor start &&\
-    tail -f /var/log/django.out
+    echo "> All services up" &&\
+    tail -f /var/log/uwsgi.log
 
-#    nohup bash -c "python manage.py runserver 0.0.0.0:8000 >/var/log/django.out 2>&1 &" &&\
+#    uwsgi --http :8000 --module eng100l.wsgi &&\
+#    nohup bash -c "python manage.py runserver 0.0.0.0:8000 >/var/log/django.log 2>&1 &" &&\
