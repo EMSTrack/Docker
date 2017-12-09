@@ -26,10 +26,6 @@ SESSION_SAVE_EVERY_REQUEST = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '[secret-key]'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
-#ALLOWED_HOSTS = [ ]
-
 SWAGGER_SETTINGS = {
     'APIS_SORTER': 'alpha',
     'DOC_EXPANSION': 'list',
@@ -37,8 +33,8 @@ SWAGGER_SETTINGS = {
     'LOGOUT_URL': 'rest_framework:logout'
 }
 
-#DEBUG = False
-DEBUG = True
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = [debug]
 ALLOWED_HOSTS = [ [hostname] ]
 
 # Application definition

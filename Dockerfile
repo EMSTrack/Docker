@@ -17,6 +17,7 @@ ARG DATABASE=ambulances
 
 ARG SECRET_KEY=CH4NG3M3!
 ARG HOSTNAME=" 'localhost', '127.0.0.1' "
+ARG DEBUG=False
 
 ARG MQTT_USERNAME=admin
 ARG MQTT_PASSWORD=cruzrojaadmin
@@ -25,7 +26,7 @@ ARG MQTT_CLIENTID=mqttclient
 
 # Install dependencies
 RUN apt-get update -y
-RUN apt-get install -y apt-utils coreutils git
+RUN apt-get install -y apt-utils git
 RUN apt-get install -y postgresql postgresql-contrib
 RUN apt-get install -y postgis
 RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
@@ -124,6 +125,7 @@ RUN sed -i'' \
         -e 's/\[database\]/'"$DATABASE"'/g' \
         -e 's/\[secret-key\]/'"$SECRET_KEY"'/g' \
         -e 's/\[hostname\]/'"$HOSTNAME"'/g' \
+        -e 's/\[debug\]/'"$DEBUG"'/g' \
         -e 's/\[mqtt-password\]/'"$MQTT_PASSWORD"'/g' \
         -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
         -e 's/\[mqtt-email\]/'"$MQTT_EMAIL"'/g' \
@@ -217,6 +219,3 @@ CMD echo "> Starting postgres" &&\
     service supervisor start &&\
     echo "> All services up" &&\
     tail -f /var/log/uwsgi.log
-
-#    uwsgi --http :8000 --module eng100l.wsgi &&\
-#    nohup bash -c "python manage.py runserver 0.0.0.0:8000 >/var/log/django.log 2>&1 &" &&\
