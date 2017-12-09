@@ -32,7 +32,7 @@ RUN apt-get install -y postgis
 RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
 RUN apt-get install -y openssl cmake
 RUN apt-get install -y supervisor
-
+RUN apt-get install -y nginx
 RUN apt-get install -y vim sudo
 
 # Import source code
@@ -181,9 +181,6 @@ RUN service postgresql start &&\
     service postgresql stop
 RUN rm db.json
 
-# Install nginx
-RUN apt-get install -y nginx
-
 # Collect static
 RUN DJANGO_ENABLE_SIGNALS="False" python manage.py collectstatic
 
@@ -194,7 +191,7 @@ COPY nginx/uwsgi_params eng100l/uwsgi_params
 # Enable nginx service
 RUN update-rc.d nginx enable
 
-# Change ownership of app
+# Change ownership of app to www-data
 RUN cd /; chown -R www-data:www-data app
 
 # Add VOLUMEs to allow backup of config, logs and databases
