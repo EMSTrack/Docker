@@ -4,26 +4,6 @@ FROM python:3.6
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG BRANCH=master
-ARG HOME=/app
-
-ARG CA_CRT=certificates/example-com.ca.crt
-ARG SRV_CRT=certificates/example-com.srv.crt
-ARG SRV_KEY=certificates/example-com.srv.key
-
-ARG USERNAME=cruzroja
-ARG PASSWORD=password
-ARG DATABASE=ambulances
-
-ARG SECRET_KEY=CH4NG3M3!
-ARG HOSTNAME=" 'localhost', '127.0.0.1' "
-ARG DEBUG=False
-
-ARG MQTT_USERNAME=admin
-ARG MQTT_PASSWORD=cruzrojaadmin
-ARG MQTT_EMAIL=webmaster@cruzroja.ucsd.edu
-ARG MQTT_CLIENTID=mqttclient
-
 # Install dependencies
 RUN apt-get update -y
 RUN apt-get install -y apt-utils git
@@ -32,26 +12,13 @@ RUN apt-get install -y postgis
 RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
 RUN apt-get install -y openssl cmake
 RUN apt-get install -y supervisor
-RUN apt-get install -y nginx
 RUN apt-get install -y vim sudo
 
-# Import source code
-WORKDIR /src
-
-# Clone main repository
-RUN git clone https://github.com/EMSTrack/WebServerAndClient
-RUN mv WebServerAndClient $HOME
-# Make sure it is in the correct branch
-
-WORKDIR $HOME
-RUN git checkout $BRANCH
-
-# Install python requirements
-WORKDIR $HOME
-RUN pip install -r requirements.txt
-
-# Install uwsgi
+# Install uwsgi and nginx
+RUN apt-get install -y nginx
 RUN pip install uwsgi
+
+ARG HOME=/app
 
 # Build libraries
 WORKDIR /src
@@ -95,13 +62,45 @@ RUN make; cp auth-plug.so /usr/local/lib
 # Run ldconfig
 RUN ldconfig
 
-# Install wait-for-it
+ARG CA_CRT=certificates/example-com.ca.crt
+ARG SRV_CRT=certificates/example-com.srv.crt
+ARG SRV_KEY=certificates/example-com.srv.key
+
+# Install certificates
+COPY $CA_CRT /etc/certificates/ca.crt
+COPY $SRV_CRT /etc/certificates/srv.crt
+COPY $SRV_KEY /etc/certificates/srv.key
+
+# Clone and build application
+
+ARG BRANCH=master
+ARG USERNAME=cruzroja
+ARG PASSWORD=password
+ARG DATABASE=ambulances
+
+ARG SECRET_KEY=CH4NG3M3!
+ARG HOSTNAME=" 'localhost', '127.0.0.1' "
+ARG DEBUG=False
+
+ARG MQTT_USERNAME=admin
+ARG MQTT_PASSWORD=cruzrojaadmin
+ARG MQTT_EMAIL=webmaster@cruzroja.ucsd.edu
+ARG MQTT_CLIENTID=mqttclient
+
+# Clone main repository and switch to branch
+WORKDIR /src
+RUN git clone https://github.com/EMSTrack/WebServerAndClient
+RUN rm -fr $HOME
+RUN mv WebServerAndClient $HOME
+
+# Checkout branch
 WORKDIR $HOME
-COPY bash/wait_for_postgres.sh wait_for_postgres.sh
-RUN chmod +x wait_for_postgres.sh
+RUN git checkout $BRANCH
+
+# Install python requirements
+RUN pip install -r requirements.txt
 
 # Setup Postgres
-WORKDIR $HOME
 COPY postgresql/init.psql init.psql
 RUN sed -i'' \
         -e 's/\[username\]/'"$USERNAME"'/g' \
@@ -117,7 +116,8 @@ USER root
 RUN rm init.psql
 
 # Setup Django
-WORKDIR $HOME
+RUN echo 8
+RUN git pull
 COPY django/settings.py eng100l/settings.py
 RUN sed -i'' \
         -e 's/\[username\]/'"$USERNAME"'/g' \
@@ -137,11 +137,6 @@ RUN service postgresql start &&\
     DJANGO_ENABLE_SIGNALS="False" python manage.py makemigrations ambulances &&\
     DJANGO_ENABLE_SIGNALS="False" python manage.py migrate &&\
     service postgresql stop
-
-# Install certificates
-COPY $CA_CRT /etc/certificates/ca.crt
-COPY $SRV_CRT /etc/certificates/srv.crt
-COPY $SRV_KEY /etc/certificates/srv.key
 
 # Setup mosquitto
 RUN useradd -M mosquitto
@@ -166,21 +161,6 @@ EXPOSE 8884
 
 EXPOSE 8000
 
-# Go back to home
-WORKDIR $HOME
-
-# Configure application
-COPY django/db.json db.json
-RUN service postgresql start &&\
-    service mosquitto start &&\
-    sleep 5 &&\
-    DJANGO_ENABLE_SIGNALS="False" python manage.py flush --no-input &&\
-    DJANGO_ENABLE_SIGNALS="False" python manage.py loaddata db.json &&\
-    sleep 5 &&\
-    service mosquitto stop &&\
-    service postgresql stop
-RUN rm db.json
-
 # Collect static
 RUN DJANGO_ENABLE_SIGNALS="False" python manage.py collectstatic
 
@@ -200,19 +180,35 @@ VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
 	"/var/log/django", \
         "/etc/certificates" ]
 
+# Initialize application
+RUN service postgresql start &&\
+    service mosquitto start &&\
+    sleep 5 &&\
+    DJANGO_ENABLE_SIGNALS="False" python manage.py bootstrap &&\
+    sleep 5 &&\
+    service mosquitto stop &&\
+    service postgresql stop
+
+# CMD echo "> Starting postgres" &&\
+#     service postgresql start &&\
+#     echo "> Starting mosquitto" &&\
+#     service mosquitto start &&\
+#     sleep 5 &&\
+#     echo "> Starting uWSGI" &&\
+#     nohup bash -c "uwsgi --socket eng100l.sock --module eng100l.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
+#     echo "> Starting nginx" &&\
+#     service nginx start &&\
+#     echo "> Starting mqttseed" &&\
+#     python manage.py mqttseed &&\
+#     echo "> Starting mqttclient" &&\
+#     service supervisor start &&\
+#     echo "> All services up" &&\
+#     tail -f /var/log/uwsgi.log
+
 CMD echo "> Starting postgres" &&\
     service postgresql start &&\
     echo "> Starting mosquitto" &&\
     service mosquitto start &&\
-    sleep 5 &&\
-    echo "> Starting uWSGI" &&\
-    nohup bash -c "uwsgi --socket eng100l.sock --module eng100l.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
-    echo "> Starting nginx" &&\
-    service nginx start &&\
-    sleep 5 &&\
-    echo "> Starting mqttseed" &&\
-    python manage.py mqttseed &&\
-    echo "> Starting mqttclient" &&\
-    service supervisor start &&\
     echo "> All services up" &&\
-    tail -f /var/log/uwsgi.log
+    DJANGO_ENABLE_SIGNALS="False" python manage.py runserver 0.0.0.0:8000
+   

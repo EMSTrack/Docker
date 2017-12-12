@@ -3,6 +3,9 @@ services:
   cruzroja:
     build:
       context: .
+      args:
+        BRANCH: "new_ambulances"
+        DEBUG: "True"
     ports:
      - "1883:1883"
      - "8000:8000"
