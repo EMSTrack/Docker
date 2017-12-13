@@ -156,4 +156,4 @@ MQTT = {
 }
 
 # Custom user
-AUTH_USER_MODEL = 'ambulances.User'
+#AUTH_USER_MODEL = 'ambulances.User'

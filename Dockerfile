@@ -116,7 +116,7 @@ USER root
 RUN rm init.psql
 
 # Setup Django
-RUN echo 8
+RUN echo 3
 RUN git pull
 COPY django/settings.py eng100l/settings.py
 RUN sed -i'' \
