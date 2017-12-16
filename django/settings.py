@@ -64,7 +64,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'eng100l.urls'
+ROOT_URLCONF = 'emstrack.urls'
 
 TEMPLATES = [
     {
@@ -82,7 +82,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'eng100l.wsgi.application'
+WSGI_APPLICATION = 'emstrack.wsgi.application'
 
 
 # Database
