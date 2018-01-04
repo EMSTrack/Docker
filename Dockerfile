@@ -133,9 +133,9 @@ RUN sed -i'' \
 	emstrack/settings.py
 RUN service postgresql start &&\
     sleep 10 &&\
-    DJANGO_ENABLE_SIGNALS="False" python manage.py makemigrations &&\
-    DJANGO_ENABLE_SIGNALS="False" python manage.py makemigrations ambulances &&\
-    DJANGO_ENABLE_SIGNALS="False" python manage.py migrate &&\
+    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations &&\
+    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulances &&\
+    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py migrate &&\
     service postgresql stop
 
 # Setup mosquitto
@@ -162,7 +162,7 @@ EXPOSE 8884
 EXPOSE 8000
 
 # Collect static
-RUN DJANGO_ENABLE_SIGNALS="False" python manage.py collectstatic
+RUN DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py collectstatic
 
 # Configure nginx
 COPY nginx/nginx.conf /etc/nginx/sites-enabled/default
@@ -184,7 +184,7 @@ VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
 RUN service postgresql start &&\
     service mosquitto start &&\
     sleep 5 &&\
-    DJANGO_ENABLE_SIGNALS="False" python manage.py bootstrap &&\
+    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py bootstrap &&\
     sleep 5 &&\
     service mosquitto stop &&\
     service postgresql stop
@@ -210,5 +210,6 @@ CMD echo "> Starting postgres" &&\
     echo "> Starting mosquitto" &&\
     service mosquitto start &&\
     echo "> All services up" &&\
-    DJANGO_ENABLE_SIGNALS="False" python manage.py runserver 0.0.0.0:8000
+    /bin/bash
+#    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py runserver 0.0.0.0:8000
    
