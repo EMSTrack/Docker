@@ -118,7 +118,7 @@ RUN rm init.psql
 # Setup Django
 RUN echo 3
 RUN git pull
-COPY django/settings.py eng100l/settings.py
+COPY django/settings.py emstrack/settings.py
 RUN sed -i'' \
         -e 's/\[username\]/'"$USERNAME"'/g' \
         -e 's/\[password\]/'"$PASSWORD"'/g' \
@@ -130,7 +130,7 @@ RUN sed -i'' \
         -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
         -e 's/\[mqtt-email\]/'"$MQTT_EMAIL"'/g' \
         -e 's/\[mqtt-clientid\]/'"$MQTT_CLIENTID"'/g' \
-	eng100l/settings.py
+	emstrack/settings.py
 RUN service postgresql start &&\
     sleep 10 &&\
     DJANGO_ENABLE_SIGNALS="False" python manage.py makemigrations &&\
@@ -166,7 +166,7 @@ RUN DJANGO_ENABLE_SIGNALS="False" python manage.py collectstatic
 
 # Configure nginx
 COPY nginx/nginx.conf /etc/nginx/sites-enabled/default
-COPY nginx/uwsgi_params eng100l/uwsgi_params
+COPY nginx/uwsgi_params emstrack/uwsgi_params
 
 # Enable nginx service
 RUN update-rc.d nginx enable
@@ -195,7 +195,7 @@ RUN service postgresql start &&\
 #     service mosquitto start &&\
 #     sleep 5 &&\
 #     echo "> Starting uWSGI" &&\
-#     nohup bash -c "uwsgi --socket eng100l.sock --module eng100l.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
+#     nohup bash -c "uwsgi --socket emstrack.sock --module emstrack.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
 #     echo "> Starting nginx" &&\
 #     service nginx start &&\
 #     echo "> Starting mqttseed" &&\
