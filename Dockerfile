@@ -210,6 +210,4 @@ CMD echo "> Starting postgres" &&\
     echo "> Starting mosquitto" &&\
     service mosquitto start &&\
     echo "> All services up" &&\
-    /bin/bash
-#    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py runserver 0.0.0.0:8000
-   
+    python manage.py runserver 0.0.0.0:8000

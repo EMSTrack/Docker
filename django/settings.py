@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'login.apps.LoginConfig',
     'rest_framework',
     'rest_framework_swagger',
+    'django_nose',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,6 +54,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis'
 ]
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
