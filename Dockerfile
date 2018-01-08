@@ -52,7 +52,7 @@ RUN make binary install
 # Configure and build mosquitto-auth-plug
 WORKDIR /src/mosquitto-auth-plug
 RUN sed -e 's/BACKEND_MYSQL ?= yes/BACKEND_MYSQL ?= no/' \
-        -e 's/BACKEND_POSTGRES ?= no/BACKEND_POSTGRES ?= yes/' \
+        -e 's/BACKEND_FILES ?= no/BACKEND_FILES ?= yes/' \
 	-e 's/BACKEND_HTTP ?= no/BACKEND_HTTP ?= yes/' \
 	-e 's,MOSQUITTO_SRC =,MOSQUITTO_SRC =/src/mosquitto,' \
 	-e 's,OPENSSLDIR = /usr,OPENSSLDIR = /usr/bin,' \
@@ -142,6 +142,9 @@ RUN service postgresql start &&\
 RUN useradd -M mosquitto
 RUN usermod -L mosquitto
 COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
+RUN sed -i'' \
+        -e 's/\[username\]/'"$USERNAME"'/g' \
+	/etc/mosquitto/mosquitto.conf
 COPY mosquitto/conf.d /etc/mosquitto/conf.d
 COPY init.d/mosquitto /etc/init.d/mosquitto
 RUN chmod +x /etc/init.d/mosquitto
@@ -188,6 +191,7 @@ RUN service postgresql start &&\
     sleep 5 &&\
     service mosquitto stop &&\
     service postgresql stop
+RUN mv pwfile /etc/mosquitto/.
 
 # CMD echo "> Starting postgres" &&\
 #     service postgresql start &&\
