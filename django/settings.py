@@ -40,8 +40,8 @@ ALLOWED_HOSTS = [ [hostname] ]
 # Application definition
 
 INSTALLED_APPS = [
-    'ambulances.apps.AmbulancesConfig',
-    'crlogin.apps.CrloginConfig',
+    'ambulance.apps.AmbulanceConfig',
+    'hospital.apps.HospitalConfig',
     'login.apps.LoginConfig',
     'rest_framework',
     'rest_framework_swagger',
@@ -143,8 +143,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # login redirect
-LOGIN_REDIRECT_URL = '/ambulances'
-LOGIN_URL = '/aauth/login'
+LOGIN_REDIRECT_URL = '/ambulance'
+LOGIN_URL = '/auth/login'
 
 # email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -159,7 +159,7 @@ MQTT = {
 }
 
 # Custom user
-#AUTH_USER_MODEL = 'ambulances.User'
+#AUTH_USER_MODEL = 'ambulance.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

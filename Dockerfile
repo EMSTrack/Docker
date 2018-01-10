@@ -74,9 +74,9 @@ COPY $SRV_KEY /etc/certificates/srv.key
 # Clone and build application
 
 ARG BRANCH=master
-ARG USERNAME=cruzroja
+ARG USERNAME=emstrack
 ARG PASSWORD=password
-ARG DATABASE=ambulances
+ARG DATABASE=emstrack
 
 ARG SECRET_KEY=CH4NG3M3!
 ARG HOSTNAME=" 'localhost', '127.0.0.1' "
@@ -134,7 +134,7 @@ RUN sed -i'' \
 RUN service postgresql start &&\
     sleep 10 &&\
     DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations &&\
-    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulances &&\
+    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulance login hospital &&\
     DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py migrate &&\
     service postgresql stop
 
@@ -142,10 +142,10 @@ RUN service postgresql start &&\
 RUN useradd -M mosquitto
 RUN usermod -L mosquitto
 COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
-RUN sed -i'' \
-        -e 's/\[username\]/'"$USERNAME"'/g' \
-	/etc/mosquitto/mosquitto.conf
 COPY mosquitto/conf.d /etc/mosquitto/conf.d
+RUN sed -i'' \
+        -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
+	/etc/mosquitto/conf.d/default.conf
 COPY init.d/mosquitto /etc/init.d/mosquitto
 RUN chmod +x /etc/init.d/mosquitto
 RUN update-rc.d mosquitto defaults
@@ -177,21 +177,20 @@ RUN update-rc.d nginx enable
 # Change ownership of app to www-data
 RUN cd /; chown -R www-data:www-data app
 
+# Initialize django application
+RUN service postgresql start &&\
+    sleep 5 &&\
+    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py bootstrap &&\
+    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py mqttpwfile &&\
+    sleep 5 &&\
+    service postgresql stop
+RUN mv pwfile /etc/mosquitto/passwd
+
 # Add VOLUMEs to allow backup of config, logs and databases
 VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
         "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto", \
 	"/var/log/django", \
         "/etc/certificates" ]
-
-# Initialize application
-RUN service postgresql start &&\
-    service mosquitto start &&\
-    sleep 5 &&\
-    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py bootstrap &&\
-    sleep 5 &&\
-    service mosquitto stop &&\
-    service postgresql stop
-RUN mv pwfile /etc/mosquitto/.
 
 # CMD echo "> Starting postgres" &&\
 #     service postgresql start &&\
