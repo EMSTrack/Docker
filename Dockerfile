@@ -11,9 +11,9 @@ ARG CA_CRT=certificates/example-com.ca.crt
 ARG SRV_CRT=certificates/example-com.srv.crt
 ARG SRV_KEY=certificates/example-com.srv.key
 
-ARG USERNAME=cruzroja
+ARG USERNAME=emstrack
 ARG PASSWORD=password
-ARG DATABASE=ambulances
+ARG DATABASE=emstrack
 
 ARG SECRET_KEY=CH4NG3M3!
 ARG HOSTNAME=" 'localhost', '127.0.0.1' "

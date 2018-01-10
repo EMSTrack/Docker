@@ -1,8 +1,11 @@
 version: '3'
 services:
-  cruzroja:
+  emstrack:
     build:
       context: .
+      args:
+        BRANCH: "master"
+        DEBUG: "True"
     ports:
      - "1883:1883"
      - "8000:8000"
