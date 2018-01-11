@@ -6,7 +6,7 @@ Docker container for WebServerAndClient
 
 There are two ways to build and test the emstrack container. You can use the `docker` or `docker-compose` (recommended). The latter will take care of mounting volumes, handling options, etc.
 
-## Using docker-compose
+### Using docker-compose
 
 Type
 
@@ -30,7 +30,7 @@ or
 
 if you need more details. If testing fails on your installation please report. Testing the MQTT functions is tricky and might require tunning some wait times in the test files.
 
-## Using docker
+### Using docker
 
 Type
 
