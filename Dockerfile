@@ -192,25 +192,25 @@ VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
 	"/var/log/django", \
         "/etc/certificates" ]
 
-# CMD echo "> Starting postgres" &&\
-#     service postgresql start &&\
-#     echo "> Starting mosquitto" &&\
-#     service mosquitto start &&\
-#     sleep 5 &&\
-#     echo "> Starting uWSGI" &&\
-#     nohup bash -c "uwsgi --socket emstrack.sock --module emstrack.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
-#     echo "> Starting nginx" &&\
-#     service nginx start &&\
-#     echo "> Starting mqttseed" &&\
-#     python manage.py mqttseed &&\
-#     echo "> Starting mqttclient" &&\
-#     service supervisor start &&\
-#     echo "> All services up" &&\
-#     tail -f /var/log/uwsgi.log
-
 CMD echo "> Starting postgres" &&\
     service postgresql start &&\
     echo "> Starting mosquitto" &&\
     service mosquitto start &&\
+    sleep 5 &&\
+    echo "> Starting uWSGI" &&\
+    nohup bash -c "uwsgi --socket emstrack.sock --module emstrack.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
+    echo "> Starting nginx" &&\
+    service nginx start &&\
+    echo "> Starting mqttseed" &&\
+    python manage.py mqttseed &&\
+    echo "> Starting mqttclient" &&\
+    service supervisor start &&\
     echo "> All services up" &&\
-    python manage.py runserver 0.0.0.0:8000
+    tail -f /var/log/uwsgi.log
+
+# CMD echo "> Starting postgres" &&\
+#     service postgresql start &&\
+#     echo "> Starting mosquitto" &&\
+#     service mosquitto start &&\
+#     echo "> All services up" &&\
+#     python manage.py runserver 0.0.0.0:8000

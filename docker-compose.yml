@@ -1,10 +1,10 @@
 version: '3'
 services:
-  cruzroja:
+  emstrack:
     build:
       context: .
       args:
-        BRANCH: "new_ambulances"
+        BRANCH: "master"
         DEBUG: "True"
     ports:
      - "1883:1883"
