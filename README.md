@@ -20,7 +20,7 @@ to run the container. You can log in a running container using
 
     docker-compose exec emstrack bash
 
-This will open up a shell session. You can, for example, test your application using
+This will open up a shell session. Once inside the container shell you can, for example, test your application using
 
     ./manage.py test
 
