@@ -2,12 +2,43 @@
 
 Docker container for WebServerAndClient
 
-## Build container
+## How to build and test the emstrack container
 
-    docker build -t cruzroja .
+There are two ways to build and test the emstrack container. You can use the `docker` or `docker-compose`. The latter will take care of mounting volumes, handling options, etc.
 
-Arguments can be modified at build time using `--build-arg`. Available
-arguments are:
+## Using docker-compose
+
+Type
+
+    docker-compose build
+
+to build the container. See below for details on the options available. Type
+
+    docker-compose up
+
+to run the container. You can log in a running container using
+
+    docker-compose exec emstrack bash
+
+This will open up a shell session. You can, for example, test your application using
+
+    ./manage.py test
+
+or
+
+    ./manage.py test -s -v 2
+
+if you need more details.
+
+## Using docker
+
+Type
+
+    docker build -t emstrack .
+
+to build your container.
+
+Arguments in the file `Dockerfile` can be modified at build time using `--build-arg`. Available arguments are:
 
 1) Application
    - HOME
@@ -35,11 +66,13 @@ arguments are:
 
 For example to build the image from the `devel` branch of the project run:
 
-    docker build --build-arg BRANCH=devel -t cruzroja .
+    docker build --build-arg BRANCH=devel -t emstrack .
 
-## Run container
+Type
 
     docker run -p 8000:8000 -p 8883:8883 -p 8884:8884 -ti cruzroja
+
+to run your container.
 
 ## Create self-signed certificates
 
