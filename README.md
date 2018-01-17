@@ -30,6 +30,12 @@ or
 
 if you need more details. If testing fails on your installation please report. Testing the MQTT functions is tricky and might require tunning some wait times in the test files.
 
+The file [django/db.json](django/db.json) has a set of fixtures that can be used to populate the database with some test data. **Beware that this data should not be used in a production server**. Use:
+
+    ./manage.py loaddata db.json
+
+to install the fixtures.
+
 ### Using docker
 
 Type

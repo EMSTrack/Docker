@@ -116,7 +116,7 @@ USER root
 RUN rm init.psql
 
 # Setup Django
-RUN echo 3
+RUN echo 1
 RUN git pull
 COPY django/settings.py emstrack/settings.py
 RUN sed -i'' \
