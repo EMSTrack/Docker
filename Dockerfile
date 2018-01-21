@@ -80,12 +80,19 @@ ARG DATABASE=emstrack
 
 ARG SECRET_KEY=CH4NG3M3!
 ARG HOSTNAME=" 'localhost', '127.0.0.1' "
+ARG PORT=8000
 ARG DEBUG=False
 
 ARG MQTT_USERNAME=admin
 ARG MQTT_PASSWORD=cruzrojaadmin
 ARG MQTT_EMAIL=webmaster@cruzroja.ucsd.edu
 ARG MQTT_CLIENTID=mqttclient
+ARG MQTT_BROKER_HOST=localhost
+ARG MQTT_BROKER_PORT=1883
+ARG MQTT_BROKER_SSL_HOST=localhost
+ARG MQTT_BROKER_SSL_PORT=8883
+ARG MQTT_BROKER_WEBSOCKETS_HOST=localhost
+ARG MQTT_BROKER_WEBSOCKETS_PORT=8884
 
 # Clone main repository and switch to branch
 WORKDIR /src
@@ -130,6 +137,12 @@ RUN sed -i'' \
         -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
         -e 's/\[mqtt-email\]/'"$MQTT_EMAIL"'/g' \
         -e 's/\[mqtt-clientid\]/'"$MQTT_CLIENTID"'/g' \
+        -e 's/\[mqtt-broker-host\]/'"$MQTT_BROKER_HOST"'/g' \
+        -e 's/\[mqtt-broker-port\]/'"$MQTT_BROKER_PORT"'/g' \
+        -e 's/\[mqtt-broker-ssl-host\]/'"$MQTT_BROKER_SSL_HOST"'/g' \
+        -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
+        -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
+        -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
 	emstrack/settings.py
 RUN service postgresql start &&\
     sleep 10 &&\
@@ -144,7 +157,12 @@ RUN usermod -L mosquitto
 COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
 COPY mosquitto/conf.d /etc/mosquitto/conf.d
 RUN sed -i'' \
+        -e 's/\[port\]/'"$PORT"'/g' \
         -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
+        -e 's/\[mqtt-broker-host\]/'"$MQTT_BROKER_HOST"'/g' \
+        -e 's/\[mqtt-broker-port\]/'"$MQTT_BROKER_PORT"'/g' \
+        -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
+        -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
 	/etc/mosquitto/conf.d/default.conf
 COPY init.d/mosquitto /etc/init.d/mosquitto
 RUN chmod +x /etc/init.d/mosquitto
@@ -158,18 +176,21 @@ RUN chown -R mosquitto:mosquitto /var/lib/mosquitto
 COPY supervisor/mqttclient.conf /etc/supervisor/conf.d/mqttclient.conf
 
 # Expose the mosquitto ports
-EXPOSE 1883
-EXPOSE 8883
-EXPOSE 8884
+EXPOSE $MQTT_BROKER_PORT
+EXPOSE $MQTT_BROKER_SSL_PORT
+EXPOSE $MQTT_BROKER_WEBSOCKETS_PORT
 
-EXPOSE 8000
+EXPOSE $PORT
 
 # Collect static
 RUN DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py collectstatic
 
 # Configure nginx
-COPY nginx/nginx.conf /etc/nginx/sites-enabled/default
 COPY nginx/uwsgi_params emstrack/uwsgi_params
+COPY nginx/nginx.conf /etc/nginx/sites-available/default
+RUN sed -i'' \
+        -e 's/\[port\]/'"$PORT"'/g' \
+	/etc/nginx/sites-available/default
 
 # Enable nginx service
 RUN update-rc.d nginx enable

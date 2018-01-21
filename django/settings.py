@@ -160,7 +160,13 @@ MQTT = {
     'USERNAME': '[mqtt-username]',
     'PASSWORD': '[mqtt-password]',
     'EMAIL': '[mqtt-email]',
-    'CLIENT_ID': '[mqtt-clientid]'
+    'CLIENT_ID': '[mqtt-clientid]',
+    'BROKER_HOST': '[mqtt-broker-host]',
+    'BROKER_PORT': '[mqtt-broker-port]',
+    'BROKER_SSL_HOST': '[mqtt-broker-ssl-host]',
+    'BROKER_SSL_PORT': '[mqtt-broker-ssl-port]',
+    'BROKER_WEBSOCKETS_HOST': '[mqtt-broker-websockets-host]',
+    'BROKER_WEBSOCKETS_PORT': '[mqtt-broker-websockets-port]'
 }
 
 # Custom user
