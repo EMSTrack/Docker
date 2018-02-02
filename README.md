@@ -22,13 +22,17 @@ to run the container. You can log in a running container using
 
 This will open up a shell session. Once inside the container shell you can, for example, test your application using
 
+    supervisorctl stop mqttclient
     ./manage.py test
+    supervisorctl start mqttclient
 
 or
 
+    supervisorctl stop mqttclient
     ./manage.py test -s -v 2
+    supervisorctl start mqttclient
 
-if you need more details. If testing fails on your installation please report. Testing the MQTT functions is tricky and might require tunning some wait times in the test files.
+if you need more details. If testing fails on your installation please report. Testing the MQTT functions is tricky and might require tunning some wait times in the test files. Don't forget to stop the mqttclient as it might interfere with certain tests.
 
 The file [django/db.json](django/db.json) has a set of fixtures that can be used to populate the database with some test data. **Beware that this data should not be used in a production server**. Use:
 
