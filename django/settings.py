@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'ambulance.apps.AmbulanceConfig',
     'hospital.apps.HospitalConfig',
     'login.apps.LoginConfig',
+    'mqtt',
+    'emstrack',
     'rest_framework',
     'rest_framework_swagger',
     'django_nose',
