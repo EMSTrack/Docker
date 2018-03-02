@@ -219,7 +219,8 @@ CMD echo "> Starting postgres" &&\
     service mosquitto start &&\
     sleep 5 &&\
     echo "> Starting uWSGI" &&\
-    nohup bash -c "uwsgi --socket emstrack.sock --module emstrack.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
+    touch /app/reload &&\
+    nohup bash -c "uwsgi --touch-reload=/app/reload --socket emstrack.sock --module emstrack.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
     echo "> Starting nginx" &&\
     service nginx start &&\
     echo "> Starting mqttseed" &&\
