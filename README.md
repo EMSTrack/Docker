@@ -80,7 +80,7 @@ For example to build the image from the `devel` branch of the project run:
 
 Type
 
-    docker run -p 8000:8000 -p 8883:8883 -p 8884:8884 -ti cruzroja
+    docker run -p 8000:8000 -p 8883:8883 -p 8884:8884 -ti emstrack
 
 to run your container.
 
