@@ -1,5 +1,5 @@
 # Use the official python 3.6 running on debian
-FROM python:3.6
+FROM python:3.7-rc-stretch
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -27,7 +27,8 @@ WORKDIR /src
 # THIS MIGHT NOT BE NECESSARY IN THE FUTURE!
 # CURRENT VERSION OF LIBWEBSOCKET GENERATES
 # ERROR IN MOSQUITTO-AUTH-PLUG
-RUN git clone https://github.com/warmcat/libwebsockets
+# RUN git clone https://github.com/warmcat/libwebsockets
+RUN apt-get install -y libwebsockets-dev
 
 # Download source code for mosquitto
 RUN git clone https://github.com/eclipse/mosquitto
@@ -36,9 +37,9 @@ RUN git clone https://github.com/eclipse/mosquitto
 RUN git clone https://github.com/jpmens/mosquitto-auth-plug
 
 # Build libwebsockets
-WORKDIR /src/libwebsockets/build
-RUN cmake ..
-RUN make install
+# WORKDIR /src/libwebsockets/build
+# RUN cmake ..
+# RUN make install
 
 # Configure and build mosquitto
 WORKDIR /src/mosquitto
