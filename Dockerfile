@@ -31,9 +31,15 @@ RUN git clone https://github.com/warmcat/libwebsockets
 
 # Download source code for mosquitto
 RUN git clone https://github.com/eclipse/mosquitto
+WORKDIR /src/mosquitto
+RUN git checkout 8025f5a29b78551e1d5e9ea13ae9dacabb6830da
+WORKDIR /src
 
 # Download source code for mosquitto-auth-plug
+#RUN git clone https://github.com/EMSTrack/mosquitto-auth-plug
 RUN git clone https://github.com/jpmens/mosquitto-auth-plug
+WORKDIR /src/mosquitto-auth-plug
+RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
 
 # Build libwebsockets
 WORKDIR /src/libwebsockets/build
