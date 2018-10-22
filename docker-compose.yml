@@ -19,6 +19,7 @@ services:
      - mosquitto_log:/var/log/mosquitto
      - mosquitto_lib:/var/lib/mosquitto
      - certificates:/etc/certificates
+     - settings:/app/emstrack
     tty: true
 
 volumes:
