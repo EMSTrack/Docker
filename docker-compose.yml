@@ -30,3 +30,4 @@ volumes:
   mosquitto_log:
   mosquitto_lib:
   certificates:
+  settings:

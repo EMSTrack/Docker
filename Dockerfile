@@ -217,7 +217,8 @@ RUN mv pwfile /etc/mosquitto/passwd
 VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
         "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto", \
 	"/var/log/django", \
-        "/etc/certificates" ]
+        "/etc/certificates" \
+	"/app/emstrack" ]
 
 CMD echo "> Starting postgres" &&\
     service postgresql start &&\
