@@ -1,5 +1,6 @@
 # Use the official python 3.6 running on debian
 FROM python:3.6
+ENV run_certbot false
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -16,6 +17,7 @@ RUN apt-get install -y vim sudo
 
 # Install uwsgi and nginx
 RUN apt-get install -y nginx
+RUN apt-get install -y python-certbot-nginx
 RUN pip install uwsgi
 
 ARG HOME=/app
@@ -86,6 +88,7 @@ ARG DATABASE=emstrack
 
 ARG SECRET_KEY=CH4NG3M3!
 ARG HOSTNAME=" 'localhost', '127.0.0.1' "
+ARG DOMAIN=localhost
 ARG PORT=8000
 ARG SSL_PORT=8443
 ARG DEBUG=False
@@ -198,10 +201,17 @@ COPY nginx/uwsgi_params emstrack/uwsgi_params
 COPY nginx/nginx.conf /etc/nginx/sites-available/default
 RUN sed -i'' \
         -e 's/\[port\]/'"$PORT"'/g' \
+        -e 's/\[domain\]/'"$DOMAIN"'/g' \
 	/etc/nginx/sites-available/default
 
 # Enable nginx service
 RUN update-rc.d nginx enable
+
+# Run certbot
+RUN if [ "$run_certbot" = true ]; then certbot --authenticator standalone --installer nginx --pre-hook "service nginx stop" --post-hook "service nginx start" -d $DOMAIN --redirect --non-interactive; else echo "SKIPPING CERTBOT"; fi
+RUN if [ "$run_certbot" = true ]; then cp /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt; fi
+RUN if [ "$run_certbot" = true ]; then cp /etc/letsencrypt/live/tijuana.emstrack.org/fullchain.pem /etc/certificates/srv.crt; fi
+RUN if [ "$run_certbot" = true ]; then cp /etc/letsencrypt/live/tijuana.emstrack.org/privkey.pem /etc/certificates/srv.crt; fi
 
 # Change ownership of app to www-data
 RUN cd /; chown -R www-data:www-data app
