@@ -113,9 +113,9 @@ RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
 RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; then echo "Letsencrypt certificates found" ; else echo "No letsencrypt certificates found" ; fi
 RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
     then \
-      cp /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt \
-      cp /etc/certificates/letsencrypt/live/$DOMAIN/fullchain.pem /etc/certificates/srv.crt \
-      cp /etc/certificates/letsencrypt/live/$DOMAIN/privkey.pem /etc/certificates/srv.key ; \
+      (cp /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt && \
+       cp /etc/certificates/letsencrypt/live/$DOMAIN/fullchain.pem /etc/certificates/srv.crt && \
+       cp /etc/certificates/letsencrypt/live/$DOMAIN/privkey.pem /etc/certificates/srv.key) ; \
     fi
 
 # Clone and build application
