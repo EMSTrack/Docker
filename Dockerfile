@@ -1,6 +1,7 @@
 # Use the official python 3.6 running on debian
 FROM python:3.6
 ARG RUN_CERTBOT=false
+RUN if [ "$RUN_CERTBOT" = true ]; then echo "WILL RUN CERTBOT"; else echo "SKIPPING CERTBOT"; fi
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
