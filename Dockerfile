@@ -1,6 +1,6 @@
 # Use the official python 3.6 running on debian
 FROM python:3.6
-ENV run_certbot false
+ARG RUN_CERTBOT=false
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -208,10 +208,10 @@ RUN sed -i'' \
 RUN update-rc.d nginx enable
 
 # Run certbot
-RUN if [ "$run_certbot" = true ]; then certbot --authenticator standalone --installer nginx --pre-hook "service nginx stop" --post-hook "service nginx start" -d $DOMAIN --redirect --non-interactive; else echo "SKIPPING CERTBOT"; fi
-RUN if [ "$run_certbot" = true ]; then cp /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt; fi
-RUN if [ "$run_certbot" = true ]; then cp /etc/letsencrypt/live/tijuana.emstrack.org/fullchain.pem /etc/certificates/srv.crt; fi
-RUN if [ "$run_certbot" = true ]; then cp /etc/letsencrypt/live/tijuana.emstrack.org/privkey.pem /etc/certificates/srv.crt; fi
+RUN if [ "$RUN_CERTBOT" = true ]; then certbot --authenticator standalone --installer nginx --pre-hook "service nginx stop" --post-hook "service nginx start" -d $DOMAIN --redirect --non-interactive; else echo "SKIPPING CERTBOT"; fi
+RUN if [ "$RUN_CERTBOT" = true ]; then cp /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt; fi
+RUN if [ "$RUN_CERTBOT" = true ]; then cp /etc/letsencrypt/live/tijuana.emstrack.org/fullchain.pem /etc/certificates/srv.crt; fi
+RUN if [ "$RUN_CERTBOT" = true ]; then cp /etc/letsencrypt/live/tijuana.emstrack.org/privkey.pem /etc/certificates/srv.crt; fi
 
 # Change ownership of app to www-data
 RUN cd /; chown -R www-data:www-data app
