@@ -18,6 +18,7 @@ services:
      - mosquitto_etc:/etc/mosquitto
      - mosquitto_log:/var/log/mosquitto
      - mosquitto_lib:/var/lib/mosquitto
+     - django_log:/var/log/django
      - certificates:/etc/certificates
      - settings:/app/emstrack
     tty: true
@@ -29,5 +30,6 @@ volumes:
   mosquitto_etc:
   mosquitto_log:
   mosquitto_lib:
+  django_log:
   certificates:
   settings:

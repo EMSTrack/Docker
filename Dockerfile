@@ -1,7 +1,5 @@
 # Use the official python 3.6 running on debian
 FROM python:3.6
-ARG RUN_CERTBOT=false
-RUN if [ "$RUN_CERTBOT" = true ]; then echo "WILL RUN CERTBOT"; else echo "SKIPPING CERTBOT"; fi
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -15,39 +13,39 @@ RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
 RUN apt-get install -y openssl cmake
 RUN apt-get install -y supervisor
 RUN apt-get install -y vim sudo
+RUN apt-get install -y libwebsockets-dev
 
 # Install uwsgi and nginx
 RUN apt-get install -y nginx
-RUN apt-get install -y python-certbot-nginx
 RUN pip install uwsgi
 
 ARG HOME=/app
 
 # Build libraries
+
+# Download source code for mosquitto
 WORKDIR /src
+RUN git clone https://github.com/eclipse/mosquitto
+WORKDIR /src/mosquitto
+RUN git checkout 8025f5a29b78551e1d5e9ea13ae9dacabb6830da
+
+# Download source code for mosquitto-auth-plug
+#RUN git clone https://github.com/EMSTrack/mosquitto-auth-plug
+WORKDIR /src
+RUN git clone https://github.com/jpmens/mosquitto-auth-plug
+WORKDIR /src/mosquitto-auth-plug
+RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
 
 # Download source code for libwebsockets
 # THIS MIGHT NOT BE NECESSARY IN THE FUTURE!
 # CURRENT VERSION OF LIBWEBSOCKET GENERATES
 # ERROR IN MOSQUITTO-AUTH-PLUG
-RUN git clone https://github.com/warmcat/libwebsockets
-
-# Download source code for mosquitto
-RUN git clone https://github.com/eclipse/mosquitto
-WORKDIR /src/mosquitto
-RUN git checkout 8025f5a29b78551e1d5e9ea13ae9dacabb6830da
-WORKDIR /src
-
-# Download source code for mosquitto-auth-plug
-#RUN git clone https://github.com/EMSTrack/mosquitto-auth-plug
-RUN git clone https://github.com/jpmens/mosquitto-auth-plug
-WORKDIR /src/mosquitto-auth-plug
-RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
-
+# WORKDIR /src
+# RUN git clone https://github.com/warmcat/libwebsockets
 # Build libwebsockets
-WORKDIR /src/libwebsockets/build
-RUN cmake ..
-RUN make install
+# WORKDIR /src/libwebsockets/build
+# RUN cmake ..
+# RUN make install
 
 # Configure and build mosquitto
 WORKDIR /src/mosquitto
@@ -208,12 +206,6 @@ RUN sed -i'' \
 # Enable nginx service
 RUN update-rc.d nginx enable
 
-# Run certbot
-RUN if [ "$RUN_CERTBOT" = true ]; then certbot --authenticator standalone --installer nginx --pre-hook "service nginx stop" --post-hook "service nginx start" -d $DOMAIN --redirect --non-interactive; else echo "SKIPPING CERTBOT"; fi
-RUN if [ "$RUN_CERTBOT" = true ]; then cp /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt; fi
-RUN if [ "$RUN_CERTBOT" = true ]; then cp /etc/letsencrypt/live/tijuana.emstrack.org/fullchain.pem /etc/certificates/srv.crt; fi
-RUN if [ "$RUN_CERTBOT" = true ]; then cp /etc/letsencrypt/live/tijuana.emstrack.org/privkey.pem /etc/certificates/srv.crt; fi
-
 # Change ownership of app to www-data
 RUN cd /; chown -R www-data:www-data app
 
@@ -226,33 +218,12 @@ RUN service postgresql start &&\
     service postgresql stop
 RUN mv pwfile /etc/mosquitto/passwd
 
+# Entrypoint script
+COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Add VOLUMEs to allow backup of config, logs and databases
-VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql", \
-        "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto", \
-	"/var/log/django", \
-        "/etc/certificates" \
-	"/app/emstrack" ]
+VOLUME ["/var/lib/postgresql", "/etc/postgresql", "/var/log/postgresql", "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto", "/var/log/django", "/etc/certificates", "/app/emstrack"]
 
-CMD echo "> Starting postgres" &&\
-    service postgresql start &&\
-    echo "> Starting mosquitto" &&\
-    service mosquitto start &&\
-    sleep 5 &&\
-    echo "> Starting uWSGI" &&\
-    touch /app/reload &&\
-    nohup bash -c "uwsgi --touch-reload=/app/reload --socket emstrack.sock --module emstrack.wsgi --uid www-data --gid www-data --chmod-socket=664 >/var/log/uwsgi.log 2>&1 &" &&\
-    echo "> Starting nginx" &&\
-    service nginx start &&\
-    echo "> Starting mqttseed" &&\
-    python manage.py mqttseed &&\
-    echo "> Starting mqttclient" &&\
-    service supervisor start &&\
-    echo "> All services up" &&\
-    tail -f /var/log/uwsgi.log
-
-# CMD echo "> Starting postgres" &&\
-#     service postgresql start &&\
-#     echo "> Starting mosquitto" &&\
-#     service mosquitto start &&\
-#     echo "> All services up" &&\
-#     python manage.py runserver 0.0.0.0:8000
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["all"]
