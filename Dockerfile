@@ -78,6 +78,10 @@ COPY $CA_CRT /etc/certificates/ca.crt
 COPY $SRV_CRT /etc/certificates/srv.crt
 COPY $SRV_KEY /etc/certificates/srv.key
 
+# Get ready for letsencrypt
+RUN mkdir /etc/certificates/letsencrypt
+RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
+
 # Clone and build application
 
 ARG BRANCH=master
