@@ -69,21 +69,7 @@ RUN make; cp auth-plug.so /usr/local/lib
 # Run ldconfig
 RUN ldconfig
 
-ARG CA_CRT=certificates/example-com.ca.crt
-ARG SRV_CRT=certificates/example-com.srv.crt
-ARG SRV_KEY=certificates/example-com.srv.key
-
-# Install certificates
-COPY $CA_CRT /etc/certificates/ca.crt
-COPY $SRV_CRT /etc/certificates/srv.crt
-COPY $SRV_KEY /etc/certificates/srv.key
-
-# Get ready for letsencrypt
-RUN mkdir /etc/certificates/letsencrypt
-RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
-
-# Clone and build application
-
+# Arguments
 ARG BRANCH=master
 ARG USERNAME=emstrack
 ARG PASSWORD=password
@@ -106,6 +92,33 @@ ARG MQTT_BROKER_SSL_HOST=localhost
 ARG MQTT_BROKER_SSL_PORT=8883
 ARG MQTT_BROKER_WEBSOCKETS_HOST=localhost
 ARG MQTT_BROKER_WEBSOCKETS_PORT=8884
+
+# Certificates
+# # Old version
+# ARG CA_CRT=certificates/example-com.ca.crt
+# ARG SRV_CRT=certificates/example-com.srv.crt
+# ARG SRV_KEY=certificates/example-com.srv.key
+# # Install certificates
+# COPY $CA_CRT /etc/certificates/ca.crt
+# COPY $SRV_CRT /etc/certificates/srv.crt
+# COPY $SRV_KEY /etc/certificates/srv.key
+
+# Certificates are ready for letsencrypt
+# Just put current keys in /etc/certificates/letsencrypt and you will be done
+COPY etc /etc
+RUN mkdir -p /etc/certificates/letsencrypt
+RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
+
+# Copy existing certificates
+RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; then echo "Letsencrypt certificates found" ; else echo "No letsencrypt certificates found" ; fi
+RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
+    then \
+      cp /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt \
+      cp /etc/certificates/letsencrypt/live/$DOMAIN/fullchain.pem /etc/certificates/srv.crt \
+      cp /etc/certificates/letsencrypt/live/$DOMAIN/privkey.pem /etc/certificates/srv.key ; \
+    fi
+
+# Clone and build application
 
 # Clone main repository and switch to branch
 WORKDIR /src
