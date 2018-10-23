@@ -110,12 +110,17 @@ RUN mkdir -p /etc/certificates/letsencrypt
 RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
 
 # Copy existing certificates
-RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; then echo "Letsencrypt certificates found" ; else echo "No letsencrypt certificates found" ; fi
 RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
     then \
-      (cp /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt && \
-       cp /etc/certificates/letsencrypt/live/$DOMAIN/fullchain.pem /etc/certificates/srv.crt && \
-       cp /etc/certificates/letsencrypt/live/$DOMAIN/privkey.pem /etc/certificates/srv.key) ; \
+      (echo "Letsencrypt certificates found" && apt-get install -y python-certbot-nginx) ; \
+    else \
+      echo "No letsencrypt certificates found" ; \
+    fi
+RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
+    then \
+      (ln -fs /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt && \
+       ln -fs /etc/certificates/letsencrypt/live/$DOMAIN/fullchain.pem /etc/certificates/srv.crt && \
+       ln -fs /etc/certificates/letsencrypt/live/$DOMAIN/privkey.pem /etc/certificates/srv.key) ; \
     fi
 
 # Clone and build application
@@ -234,6 +239,11 @@ RUN service postgresql start &&\
     sleep 5 &&\
     service postgresql stop
 RUN mv pwfile /etc/mosquitto/passwd
+
+RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
+    then \
+      (echo "# Run:\ncertbot --authenticator standalone --installer nginx --pre-hook \"service nginx stop\" --post-hook \"service nginx start\" -d $DOMAIN --reinstall --redirect\n# to reinstall LetsEncrypt certificates.") ;
+    fi
 
 # Entrypoint script
 COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
