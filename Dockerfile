@@ -242,7 +242,7 @@ RUN mv pwfile /etc/mosquitto/passwd
 
 RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
     then \
-      (echo "# Run:\ncertbot --authenticator standalone --installer nginx --pre-hook \"service nginx stop\" --post-hook \"service nginx start\" -d $DOMAIN --reinstall --redirect\n# to reinstall LetsEncrypt certificates.") ;
+      echo "# Run:\ncertbot --authenticator standalone --installer nginx --pre-hook \"service nginx stop\" --post-hook \"service nginx start\" -d $DOMAIN --reinstall --redirect\n# to reinstall LetsEncrypt certificates." ; \
     fi
 
 # Entrypoint script
