@@ -1,5 +1,8 @@
+DROP DATABASE [database];
+DROP USER [username];
+
 CREATE USER [username] WITH PASSWORD '[password]';
-CREATE EXTENSION adminpack;
+-- CREATE EXTENSION adminpack;
 CREATE DATABASE [database];
 GRANT ALL PRIVILEGES ON DATABASE [database] TO [username];
 ALTER USER [username] CREATEDB;

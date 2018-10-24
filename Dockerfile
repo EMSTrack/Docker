@@ -1,7 +1,14 @@
+# Using ubuntu as a base image
 FROM ubuntu:18.04
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
+
+# Arguments
+ARG APP_HOME=/app
+ARG BRANCH=master
+ARG PORT=8000
+ARG HOSTNAME=localhost
 
 # Install dependencies
 RUN apt-get update -y
@@ -11,8 +18,10 @@ RUN apt-get install -y apt-utils git
 RUN apt-get install -y python3-pip python3-dev 
 
 # Install postgres and postgis
-RUN apt-get install -y postgresql postgresql-contrib
-RUN apt-get install -y postgis
+# RUN apt-get install -y postgresql postgresql-contrib
+# RUN apt-get install -y postgis
+
+RUN apt-get install -y postgresql-client-10
 RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
 
 # Install opensll
@@ -44,8 +53,6 @@ RUN sed -i'' \
         -e 's/bin\/python/bin\/python2/' \
 	/usr/bin/supervisorctl
 
-ARG HOME=/app
-
 # Build libraries
 
 # Download source code for mosquitto
@@ -54,25 +61,8 @@ RUN git clone https://github.com/eclipse/mosquitto
 WORKDIR /src/mosquitto
 RUN git checkout 8025f5a29b78551e1d5e9ea13ae9dacabb6830da
 
-# Download source code for mosquitto-auth-plug
-#RUN git clone https://github.com/EMSTrack/mosquitto-auth-plug
-WORKDIR /src
-RUN git clone https://github.com/jpmens/mosquitto-auth-plug
-WORKDIR /src/mosquitto-auth-plug
-RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
-
-# Download source code for libwebsockets
-# THIS MIGHT NOT BE NECESSARY IN THE FUTURE!
-# CURRENT VERSION OF LIBWEBSOCKET GENERATES
-# ERROR IN MOSQUITTO-AUTH-PLUG
-# WORKDIR /src
-# RUN git clone https://github.com/warmcat/libwebsockets
-# Build libwebsockets
-# WORKDIR /src/libwebsockets/build
-# RUN cmake ..
-# RUN make install
-
 # Configure and build mosquitto
+RUN apt-get install -y uuid-dev
 WORKDIR /src/mosquitto
 RUN cp config.mk config.mk.in
 RUN sed -e 's/WITH_SRV:=yes/WITH_SRV:=no/' \
@@ -80,8 +70,27 @@ RUN sed -e 's/WITH_SRV:=yes/WITH_SRV:=no/' \
 	-e 's/WITH_DOCS:=yes/WITH_DOCS:=no/' \
 	config.mk.in > config.mk
 RUN make binary install
+RUN useradd -M mosquitto
+RUN usermod -L mosquitto
+COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
+COPY mosquitto/conf.d /etc/mosquitto/conf.d
+COPY init.d/mosquitto /etc/init.d/mosquitto
+RUN chmod +x /etc/init.d/mosquitto
+RUN update-rc.d mosquitto defaults
+RUN mkdir /var/log/mosquitto
+RUN chown -R mosquitto:mosquitto /var/log/mosquitto
+RUN mkdir /var/lib/mosquitto
+RUN chown -R mosquitto:mosquitto /var/lib/mosquitto
+
+# Download source code for mosquitto-auth-plug
+#RUN git clone https://github.com/EMSTrack/mosquitto-auth-plug
+WORKDIR /src
+RUN git clone https://github.com/jpmens/mosquitto-auth-plug
+WORKDIR /src/mosquitto-auth-plug
+RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
 
 # Configure and build mosquitto-auth-plug
+RUN apt-get install -y libcurl4-openssl-dev
 WORKDIR /src/mosquitto-auth-plug
 RUN sed -e 's/BACKEND_MYSQL ?= yes/BACKEND_MYSQL ?= no/' \
         -e 's/BACKEND_FILES ?= no/BACKEND_FILES ?= yes/' \
@@ -91,161 +100,26 @@ RUN sed -e 's/BACKEND_MYSQL ?= yes/BACKEND_MYSQL ?= no/' \
 	config.mk.in > config.mk
 RUN make; cp auth-plug.so /usr/local/lib
 
-# Run ldconfig
-RUN ldconfig
-
-# Arguments
-ARG BRANCH=master
-ARG USERNAME=emstrack
-ARG PASSWORD=password
-ARG DATABASE=emstrack
-
-ARG SECRET_KEY=CH4NG3M3!
-ARG HOSTNAMES=" 'localhost', '127.0.0.1' "
-ARG HOSTNAME=localhost
-ARG PORT=8000
-ARG SSL_PORT=8443
-ARG DEBUG=False
-
-ARG MQTT_USERNAME=admin
-ARG MQTT_PASSWORD=cruzrojaadmin
-ARG MQTT_EMAIL=webmaster@cruzroja.ucsd.edu
-ARG MQTT_CLIENTID=mqttclient
-
-ARG MQTT_BROKER_HTTP_IP=127.0.0.1
-ARG MQTT_BROKER_HTTP_PORT=$PORT
-ARG MQTT_BROKER_HTTP_WITH_TLS=false
-ARG MQTT_BROKER_HOST=localhost
-ARG MQTT_BROKER_PORT=1883
-ARG MQTT_BROKER_SSL_HOST=localhost
-ARG MQTT_BROKER_SSL_PORT=8883
-ARG MQTT_BROKER_WEBSOCKETS_HOST=localhost
-ARG MQTT_BROKER_WEBSOCKETS_PORT=8884
-
-# Certificates
-# # Old version
-# ARG CA_CRT=certificates/example-com.ca.crt
-# ARG SRV_CRT=certificates/example-com.srv.crt
-# ARG SRV_KEY=certificates/example-com.srv.key
-# # Install certificates
-# COPY $CA_CRT /etc/certificates/ca.crt
-# COPY $SRV_CRT /etc/certificates/srv.crt
-# COPY $SRV_KEY /etc/certificates/srv.key
-
-# Certificates are ready for letsencrypt
-# Just put current keys in /etc/certificates/letsencrypt and you will be done
-COPY etc /etc
-RUN mkdir -p /etc/certificates/letsencrypt
-RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
-
-# Copy existing certificates
-RUN if [ -e "/etc/certificates/letsencrypt/live/$HOSTNAME" ] ; \
-    then \
-      (echo "Letsencrypt certificates found" && pip install certbot-nginx) ; \
-    else \
-      echo "No letsencrypt certificates found" ; \
-    fi
-RUN if [ -e "/etc/certificates/letsencrypt/live/$HOSTNAME" ] ; \
-    then \
-      (ln -fs /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt && \
-       ln -fs /etc/certificates/letsencrypt/live/$HOSTNAME/fullchain.pem /etc/certificates/srv.crt && \
-       ln -fs /etc/certificates/letsencrypt/live/$HOSTNAME/privkey.pem /etc/certificates/srv.key) ; \
-    fi
-
-# Clone and build application
+# Clone application
 
 # Clone main repository and switch to branch
 WORKDIR /src
 RUN git clone https://github.com/EMSTrack/WebServerAndClient
-RUN rm -fr $HOME
-RUN mv WebServerAndClient $HOME
+RUN rm -fr $APP_HOME
+RUN mv WebServerAndClient $APP_HOME
 
 # Checkout branch
-WORKDIR $HOME
+WORKDIR $APP_HOME
 RUN git checkout $BRANCH
 
 # Install python requirements
 RUN pip install -r requirements.txt
 
-# Setup Postgres
-COPY postgresql/init.psql init.psql
-RUN sed -i'' \
-        -e 's/\[username\]/'"$USERNAME"'/g' \
-        -e 's/\[password\]/'"$PASSWORD"'/g' \
-        -e 's/\[database\]/'"$DATABASE"'/g' \
-	init.psql
-USER postgres
-RUN service postgresql start &&\
-    sleep 5 &&\
-    psql -f init.psql &&\
-    service postgresql stop
-USER root
-RUN rm init.psql
-
-# Setup Django
-RUN git pull
-COPY django/settings.py emstrack/settings.py
-RUN sed -i'' \
-        -e 's/\[username\]/'"$USERNAME"'/g' \
-        -e 's/\[password\]/'"$PASSWORD"'/g' \
-        -e 's/\[database\]/'"$DATABASE"'/g' \
-        -e 's/\[secret-key\]/'"$SECRET_KEY"'/g' \
-        -e 's/\[hostname\]/'"$HOSTNAMES"'/g' \
-        -e 's/\[debug\]/'"$DEBUG"'/g' \
-        -e 's/\[mqtt-password\]/'"$MQTT_PASSWORD"'/g' \
-        -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
-        -e 's/\[mqtt-email\]/'"$MQTT_EMAIL"'/g' \
-        -e 's/\[mqtt-clientid\]/'"$MQTT_CLIENTID"'/g' \
-        -e 's/\[mqtt-broker-host\]/'"$MQTT_BROKER_HOST"'/g' \
-        -e 's/\[mqtt-broker-port\]/'"$MQTT_BROKER_PORT"'/g' \
-        -e 's/\[mqtt-broker-ssl-host\]/'"$MQTT_BROKER_SSL_HOST"'/g' \
-        -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
-        -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
-        -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
-	emstrack/settings.py
-RUN service postgresql start &&\
-    sleep 10 &&\
-    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations &&\
-    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulance login hospital &&\
-    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py migrate &&\
-    service postgresql stop
-
-# Setup mosquitto
-RUN useradd -M mosquitto
-RUN usermod -L mosquitto
-COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
-COPY mosquitto/conf.d /etc/mosquitto/conf.d
-RUN sed -i'' \
-        -e 's/\[ip\]/'"$MQTT_BROKER_HTTP_IP"'/g' \
-        -e 's/\[port\]/'"$MQTT_BROKER_HTTP_PORT"'/g' \
-        -e 's/\[with_tls\]/'"$MQTT_BROKER_HTTP_WITH_TLS"'/g' \
-        -e 's/\[hostname\]/'"$HOSTNAME"'/g' \
-        -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
-        -e 's/\[mqtt-broker-port\]/'"$MQTT_BROKER_PORT"'/g' \
-        -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
-        -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
-	/etc/mosquitto/conf.d/default.conf
-COPY init.d/mosquitto /etc/init.d/mosquitto
-RUN chmod +x /etc/init.d/mosquitto
-RUN update-rc.d mosquitto defaults
-RUN mkdir /var/log/mosquitto
-RUN chown -R mosquitto:mosquitto /var/log/mosquitto
-RUN mkdir /var/lib/mosquitto
-RUN chown -R mosquitto:mosquitto /var/lib/mosquitto
+# Setup django
+COPY django/settings.py $APP_HOME/emstrack/settings.py
 
 # Setup mqttclient
 COPY supervisor/mqttclient.conf /etc/supervisor/conf.d/mqttclient.conf
-
-# Expose the mosquitto ports
-EXPOSE $MQTT_BROKER_PORT
-EXPOSE $MQTT_BROKER_SSL_PORT
-EXPOSE $MQTT_BROKER_WEBSOCKETS_PORT
-
-EXPOSE $PORT
-EXPOSE $SSL_PORT
-
-# Collect static
-RUN DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py collectstatic
 
 # Configure nginx
 COPY nginx/uwsgi_params emstrack/uwsgi_params
@@ -258,29 +132,28 @@ RUN sed -i'' \
 # Enable nginx service
 RUN update-rc.d nginx enable
 
-# Change ownership of app to www-data
-RUN cd /; chown -R www-data:www-data app
+# Run ldconfig
+RUN ldconfig
 
-# Initialize django application
-RUN service postgresql start &&\
-    sleep 5 &&\
-    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py bootstrap &&\
-    DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py mqttpwfile &&\
-    sleep 5 &&\
-    service postgresql stop
-RUN mv pwfile /etc/mosquitto/passwd
+# Init files
+COPY postgresql/init.psql $APP_HOME/init/init.psql
 
-RUN if [ -e "/etc/certificates/letsencrypt/live/$HOSTNAME" ] ; \
-    then \
-      echo "# Run:\ncertbot --authenticator standalone --installer nginx --pre-hook \"service nginx stop\" --post-hook \"service nginx start\" -d $HOSTNAME --reinstall --redirect\n# to reinstall LetsEncrypt certificates." ; \
-    fi
+# Certificates are ready for letsencrypt
+# Just put current keys in /etc/certificates/letsencrypt and you will be done
+COPY etc /etc
+RUN mkdir -p /etc/certificates/letsencrypt
+RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
+
+# Init script
+COPY scripts/docker-entrypoint-init.sh /usr/local/bin/docker-entrypoint-init.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-init.sh
 
 # Entrypoint script
-COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Add VOLUMEs to allow backup of config, logs and databases
-VOLUME ["/var/lib/postgresql", "/etc/postgresql", "/var/log/postgresql", "/etc/mosquitto", "/var/log/mosquitto", "/var/lib/mosquitto", "/var/log/django", "/etc/certificates", "/app/emstrack"]
+VOLUME ["/etc/certificates"]
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["all"]

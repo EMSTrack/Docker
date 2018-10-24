@@ -32,7 +32,15 @@ cleanup() {
 
 }
 
-if [ "$1" = 'basic' ] || [ "$1" = 'all' ]; then
+COMMAND=$1
+INIT_FILE=/etc/initialized
+if [ ! -f $INIT_FILE ]; then
+    echo "> Container is not initialized..."
+    COMMAND=test
+    bash
+fi
+
+if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ]; then
     
     echo "> Starting basic services"
     
@@ -55,7 +63,7 @@ if [ "$1" = 'basic' ] || [ "$1" = 'all' ]; then
 
     echo "> Basic services up"
 
-    if [ "$1" = 'all' ]; then
+    if [ "$COMMAND" = 'all' ]; then
 
 	echo "> Starting all services"
 	
@@ -80,6 +88,15 @@ if [ "$1" = 'basic' ] || [ "$1" = 'all' ]; then
     # Call cleanup
     cleanup
 
+elif [ "$COMMAND" = 'init' ]; then
+
+    echo "> Initializing container..." 
+    /usr/local/bin/docker-entrypoint-init.sh
+    
+elif [ "$COMMAND" = 'test' ]; then
+
+    echo "> Just testing..." 
+    
 else
 
     echo "> No services started" 

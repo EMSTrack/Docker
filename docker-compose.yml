@@ -1,35 +1,25 @@
 version: '3'
 services:
+
+  db:
+    image: postgis:10-2.5
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+
   emstrack:
     build:
       context: .
       args:
         BRANCH: "master"
-        DEBUG: "True"
     ports:
      - "1883:1883"
      - "8000:8000"
      - "8883:8883"
      - "8884:8884"
     volumes:
-     - postgresql:/var/lib/postgresql
-     - postgresql_etc:/etc/postgresql
-     - postgresql_log:/var/log/postgresql
-     - mosquitto_etc:/etc/mosquitto
-     - mosquitto_log:/var/log/mosquitto
-     - mosquitto_lib:/var/lib/mosquitto
-     - django_log:/var/log/django
      - certificates:/etc/certificates
-     - settings:/app/emstrack
     tty: true
 
 volumes:
-  postgresql:
-  postgresql_etc:
-  postgresql_log:
-  mosquitto_etc:
-  mosquitto_log:
-  mosquitto_lib:
-  django_log:
   certificates:
-  settings:
