@@ -103,8 +103,8 @@ ARG PASSWORD=password
 ARG DATABASE=emstrack
 
 ARG SECRET_KEY=CH4NG3M3!
-ARG HOSTNAME=" 'localhost', '127.0.0.1' "
-ARG DOMAIN=localhost
+ARG HOSTNAMES=" 'localhost', '127.0.0.1' "
+ARG HOSTNAME=localhost
 ARG PORT=8000
 ARG SSL_PORT=8443
 ARG DEBUG=False
@@ -113,6 +113,10 @@ ARG MQTT_USERNAME=admin
 ARG MQTT_PASSWORD=cruzrojaadmin
 ARG MQTT_EMAIL=webmaster@cruzroja.ucsd.edu
 ARG MQTT_CLIENTID=mqttclient
+
+ARG MQTT_BROKER_IP=127.0.0.1
+ARG MQTT_BROKER_PORT=$PORT
+ARG MQTT_BROKER_WITH_TLS=false
 ARG MQTT_BROKER_HOST=localhost
 ARG MQTT_BROKER_PORT=1883
 ARG MQTT_BROKER_SSL_HOST=localhost
@@ -137,17 +141,17 @@ RUN mkdir -p /etc/certificates/letsencrypt
 RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
 
 # Copy existing certificates
-RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
+RUN if [ -e "/etc/certificates/letsencrypt/live/$HOSTNAME" ] ; \
     then \
-      (echo "Letsencrypt certificates found" && apt-get install -y python-certbot-nginx) ; \
+      (echo "Letsencrypt certificates found" && pip install certbot-nginx) ; \
     else \
       echo "No letsencrypt certificates found" ; \
     fi
-RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
+RUN if [ -e "/etc/certificates/letsencrypt/live/$HOSTNAME" ] ; \
     then \
       (ln -fs /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt && \
-       ln -fs /etc/certificates/letsencrypt/live/$DOMAIN/fullchain.pem /etc/certificates/srv.crt && \
-       ln -fs /etc/certificates/letsencrypt/live/$DOMAIN/privkey.pem /etc/certificates/srv.key) ; \
+       ln -fs /etc/certificates/letsencrypt/live/$HOSTNAME/fullchain.pem /etc/certificates/srv.crt && \
+       ln -fs /etc/certificates/letsencrypt/live/$HOSTNAME/privkey.pem /etc/certificates/srv.key) ; \
     fi
 
 # Clone and build application
@@ -188,7 +192,7 @@ RUN sed -i'' \
         -e 's/\[password\]/'"$PASSWORD"'/g' \
         -e 's/\[database\]/'"$DATABASE"'/g' \
         -e 's/\[secret-key\]/'"$SECRET_KEY"'/g' \
-        -e 's/\[hostname\]/'"$HOSTNAME"'/g' \
+        -e 's/\[hostname\]/'"$HOSTNAMES"'/g' \
         -e 's/\[debug\]/'"$DEBUG"'/g' \
         -e 's/\[mqtt-password\]/'"$MQTT_PASSWORD"'/g' \
         -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
@@ -214,9 +218,11 @@ RUN usermod -L mosquitto
 COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
 COPY mosquitto/conf.d /etc/mosquitto/conf.d
 RUN sed -i'' \
-        -e 's/\[port\]/'"$PORT"'/g' \
+        -e 's/\[ip\]/'"$MQTT_BROKER_IP"'/g' \
+        -e 's/\[port\]/'"$MQTT_BROKER_PORT"'/g' \
+        -e 's/\[with_tls\]/'"$MQTT_BROKER_WITH_TLS"'/g' \
+        -e 's/\[hostname\]/'"$HOSTNAME"'/g' \
         -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
-        -e 's/\[mqtt-broker-host\]/'"$MQTT_BROKER_HOST"'/g' \
         -e 's/\[mqtt-broker-port\]/'"$MQTT_BROKER_PORT"'/g' \
         -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
         -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
@@ -248,7 +254,7 @@ COPY nginx/uwsgi_params emstrack/uwsgi_params
 COPY nginx/nginx.conf /etc/nginx/sites-available/default
 RUN sed -i'' \
         -e 's/\[port\]/'"$PORT"'/g' \
-        -e 's/\[domain\]/'"$DOMAIN"'/g' \
+        -e 's/\[domain\]/'"$HOSTNAME"'/g' \
 	/etc/nginx/sites-available/default
 
 # Enable nginx service
@@ -266,9 +272,9 @@ RUN service postgresql start &&\
     service postgresql stop
 RUN mv pwfile /etc/mosquitto/passwd
 
-RUN if [ -e "/etc/certificates/letsencrypt/live/$DOMAIN" ] ; \
+RUN if [ -e "/etc/certificates/letsencrypt/live/$HOSTNAME" ] ; \
     then \
-      echo "# Run:\ncertbot --authenticator standalone --installer nginx --pre-hook \"service nginx stop\" --post-hook \"service nginx start\" -d $DOMAIN --reinstall --redirect\n# to reinstall LetsEncrypt certificates." ; \
+      echo "# Run:\ncertbot --authenticator standalone --installer nginx --pre-hook \"service nginx stop\" --post-hook \"service nginx start\" -d $HOSTNAME --reinstall --redirect\n# to reinstall LetsEncrypt certificates." ; \
     fi
 
 # Entrypoint script
