@@ -1,5 +1,6 @@
 # Use the official python 3.6 running on debian
-FROM python:3.6
+# FROM python:3.6
+FROM ubuntu:16.04
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -7,17 +8,43 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Install dependencies
 RUN apt-get update -y
 RUN apt-get install -y apt-utils git
+
+# Install python
+RUN apt-get install -y python3-pip python3-dev 
+
+# Install postgres and postgis
 RUN apt-get install -y postgresql postgresql-contrib
 RUN apt-get install -y postgis
 RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
-RUN apt-get install -y openssl cmake
-RUN apt-get install -y supervisor
-RUN apt-get install -y vim sudo
+
+# Install opensll
+RUN apt-get install -y openssl
+
+# Install utilities
+RUN apt-get install -y vim sudo less
+
+# Install libwebsockets
 RUN apt-get install -y libwebsockets-dev
 
-# Install uwsgi and nginx
+# Install nginx
 RUN apt-get install -y nginx
+
+# Make python3 default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+RUN ln -s /usr/bin/pip3 /usr/bin/pip
+RUN pip install --upgrade pip
+
+# Install uwsgi
 RUN pip install uwsgi
+
+# Install supervisor (make sure it runs on python2)
+RUN apt-get install -y supervisor
+RUN sed -i'' \
+        -e 's/bin\/python/bin\/python2/' \
+	/usr/bin/supervisord
+RUN sed -i'' \
+        -e 's/bin\/python/bin\/python2/' \
+	/usr/bin/supervisorctl
 
 ARG HOME=/app
 
@@ -154,7 +181,6 @@ USER root
 RUN rm init.psql
 
 # Setup Django
-RUN echo 1
 RUN git pull
 COPY django/settings.py emstrack/settings.py
 RUN sed -i'' \

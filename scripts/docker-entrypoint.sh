@@ -1,9 +1,44 @@
 #!/bin/bash
 
+pid=0
+
+# Cleanup
+cleanup() {
+
+    # Go verbose
+    set -x
+    
+    echo "Container stopped, cleaning up..."
+
+    # stop supervisor
+    service supervisor stop
+
+    # stop nginx
+    service nginx stop
+
+    # stop mosquitto
+    service mosquitto stop
+
+    # stop postgres
+    service postgresql stop
+
+    echo "Exiting..."
+
+    if [ $pid -ne 0 ]; then
+	kill -SIGTERM "$pid"
+	wait "$pid"
+    fi
+    exit 143; # 128 + 15 -- SIGTERM
+
+}
+
 if [ "$1" = 'basic' ] || [ "$1" = 'all' ]; then
     
     echo "> Starting basic services"
     
+    # Trap SIGTERM
+    trap 'kill ${!}; cleanup' SIGTERM
+
     echo "> Starting postgres"
     service postgresql start
 
@@ -34,8 +69,16 @@ if [ "$1" = 'basic' ] || [ "$1" = 'all' ]; then
 
     fi
 
-    echo "> Inspecting log"
-    tail -f /var/log/uwsgi.log
+    pid="$!"
+    
+    # Wait forever
+    while true
+    do
+	tail -f /dev/null & wait ${!}
+    done
+
+    # Call cleanup
+    cleanup
 
 else
 
