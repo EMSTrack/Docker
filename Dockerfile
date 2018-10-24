@@ -1,6 +1,6 @@
 # Use the official python 3.6 running on debian
 # FROM python:3.6
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -114,9 +114,9 @@ ARG MQTT_PASSWORD=cruzrojaadmin
 ARG MQTT_EMAIL=webmaster@cruzroja.ucsd.edu
 ARG MQTT_CLIENTID=mqttclient
 
-ARG MQTT_BROKER_IP=127.0.0.1
-ARG MQTT_BROKER_PORT=$PORT
-ARG MQTT_BROKER_WITH_TLS=false
+ARG MQTT_BROKER_HTTP_IP=127.0.0.1
+ARG MQTT_BROKER_HTTP_PORT=$PORT
+ARG MQTT_BROKER_HTTP_WITH_TLS=false
 ARG MQTT_BROKER_HOST=localhost
 ARG MQTT_BROKER_PORT=1883
 ARG MQTT_BROKER_SSL_HOST=localhost
@@ -218,9 +218,9 @@ RUN usermod -L mosquitto
 COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
 COPY mosquitto/conf.d /etc/mosquitto/conf.d
 RUN sed -i'' \
-        -e 's/\[ip\]/'"$MQTT_BROKER_IP"'/g' \
-        -e 's/\[port\]/'"$MQTT_BROKER_PORT"'/g' \
-        -e 's/\[with_tls\]/'"$MQTT_BROKER_WITH_TLS"'/g' \
+        -e 's/\[ip\]/'"$MQTT_BROKER_HTTP_IP"'/g' \
+        -e 's/\[port\]/'"$MQTT_BROKER_HTTP_PORT"'/g' \
+        -e 's/\[with_tls\]/'"$MQTT_BROKER_HTTP_WITH_TLS"'/g' \
         -e 's/\[hostname\]/'"$HOSTNAME"'/g' \
         -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
         -e 's/\[mqtt-broker-port\]/'"$MQTT_BROKER_PORT"'/g' \
