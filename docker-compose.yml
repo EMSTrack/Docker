@@ -10,16 +10,14 @@ services:
   emstrack:
     build:
       context: .
-      args:
-        BRANCH: "master"
     ports:
      - "1883:1883"
      - "8000:8000"
      - "8883:8883"
      - "8884:8884"
     volumes:
-     - certificates:/etc/certificates
+     - settings:/etc/emstrack
     tty: true
 
 volumes:
-  certificates:
+  settings:

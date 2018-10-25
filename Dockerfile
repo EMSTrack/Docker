@@ -6,9 +6,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Arguments
 ARG APP_HOME=/app
-ARG BRANCH=master
-ARG PORT=8000
-ARG HOSTNAME=localhost
 
 # Install dependencies
 RUN apt-get update -y
@@ -18,9 +15,6 @@ RUN apt-get install -y apt-utils git
 RUN apt-get install -y python3-pip python3-dev 
 
 # Install postgres and postgis
-# RUN apt-get install -y postgresql postgresql-contrib
-# RUN apt-get install -y postgis
-
 RUN apt-get install -y postgresql-client-10
 RUN apt-get install -y gdal-bin libgdal-dev python3-gdal
 
@@ -29,6 +23,8 @@ RUN apt-get install -y openssl
 
 # Install utilities
 RUN apt-get install -y vim sudo less
+RUN apt-get install -y uuid-dev
+RUN apt-get install -y libcurl4-openssl-dev
 
 # Install libwebsockets
 RUN apt-get install -y libwebsockets-dev
@@ -62,7 +58,6 @@ WORKDIR /src/mosquitto
 RUN git checkout 8025f5a29b78551e1d5e9ea13ae9dacabb6830da
 
 # Configure and build mosquitto
-RUN apt-get install -y uuid-dev
 WORKDIR /src/mosquitto
 RUN cp config.mk config.mk.in
 RUN sed -e 's/WITH_SRV:=yes/WITH_SRV:=no/' \
@@ -90,7 +85,6 @@ WORKDIR /src/mosquitto-auth-plug
 RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
 
 # Configure and build mosquitto-auth-plug
-RUN apt-get install -y libcurl4-openssl-dev
 WORKDIR /src/mosquitto-auth-plug
 RUN sed -e 's/BACKEND_MYSQL ?= yes/BACKEND_MYSQL ?= no/' \
         -e 's/BACKEND_FILES ?= no/BACKEND_FILES ?= yes/' \
@@ -108,11 +102,8 @@ RUN git clone https://github.com/EMSTrack/WebServerAndClient
 RUN rm -fr $APP_HOME
 RUN mv WebServerAndClient $APP_HOME
 
-# Checkout branch
-WORKDIR $APP_HOME
-RUN git checkout $BRANCH
-
 # Install python requirements
+WORKDIR $APP_HOME
 RUN pip install -r requirements.txt
 
 # Setup django
@@ -124,12 +115,6 @@ COPY supervisor/mqttclient.conf /etc/supervisor/conf.d/mqttclient.conf
 # Configure nginx
 COPY nginx/uwsgi_params emstrack/uwsgi_params
 COPY nginx/nginx.conf /etc/nginx/sites-available/default
-RUN sed -i'' \
-        -e 's/\[port\]/'"$PORT"'/g' \
-        -e 's/\[domain\]/'"$HOSTNAME"'/g' \
-	/etc/nginx/sites-available/default
-
-# Enable nginx service
 RUN update-rc.d nginx enable
 
 # Run ldconfig
@@ -139,10 +124,10 @@ RUN ldconfig
 COPY postgresql/init.psql $APP_HOME/init/init.psql
 
 # Certificates are ready for letsencrypt
-# Just put current keys in /etc/certificates/letsencrypt and you will be done
+# Just put current keys in /etc/emstrack/letsencrypt and you will be done
 COPY etc /etc
-RUN mkdir -p /etc/certificates/letsencrypt
-RUN ln -s /etc/certificates/letsencrypt /etc/letsencrypt
+RUN mkdir -p /etc/emstrack/letsencrypt
+RUN ln -s /etc/emstrack/letsencrypt /etc/letsencrypt
 
 # Init script
 COPY scripts/docker-entrypoint-init.sh /usr/local/bin/docker-entrypoint-init.sh
@@ -153,7 +138,7 @@ COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Add VOLUMEs to allow backup of config, logs and databases
-VOLUME ["/etc/certificates"]
+VOLUME ["/etc/emstrack"]
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["all"]

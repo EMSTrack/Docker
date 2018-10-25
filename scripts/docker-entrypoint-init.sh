@@ -1,4 +1,4 @@
-INIT_FILE=/tmp/emstrack.initialized
+INIT_FILE=/etc/emstrack/emstrack.initialized
 if [ -f $INIT_FILE ]; then
     echo "> Container is already initialized"
     exit 1
@@ -8,12 +8,14 @@ echo "> Initializing container..."
 
 echo "> Reading settings from /etc/emstrack.defaults..."
 set -o allexport
-source /etc/emstrack.defaults
-if [ -f /etc/emstrack.init ]; then
-    echo "> Reading settings from /etc/emstrack.init..."
-    source /etc/emstrack.init
+source /etc/emstrack/emstrack.defaults
+if [ -f /etc/emstrack/emstrack.init ]; then
+    echo "> Reading settings from /etc/emstrack/emstrack.init..."
+    source /etc/emstrack/emstrack.init
 fi
 set +o allexport
+
+echo "APP_HOME=$APP_HOME"
 
 # Setup mosquitto
 sed -i'' \
@@ -27,6 +29,13 @@ sed -i'' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
     /etc/mosquitto/conf.d/default.conf
 
+# Setup nginx
+sed -i'' \
+    -e 's/\[port\]/'"$PORT"'/g' \
+    -e 's/\[domain\]/'"$HOSTNAME"'/g' \
+    /etc/nginx/sites-available/default
+
+# Wait for postgres
 timer="5"
 until pg_isready -d postgres://postgres:$DB_PASSWORD@db; do
   >&2 echo "Postgres is unavailable - sleeping for $timer seconds"
@@ -42,6 +51,8 @@ sed -i'' \
 psql -f $APP_HOME/init/init.psql -d postgres://postgres:$DB_PASSWORD@db
 
 # Setup Django
+cd $APP_HOME
+git checkout $APP_BRANCH
 sed -i'' \
     -e 's/\[username\]/'"$DB_USERNAME"'/g' \
     -e 's/\[password\]/'"$DB_PASSWORD"'/g' \
@@ -61,7 +72,6 @@ sed -i'' \
     -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
     $APP_HOME/emstrack/settings.py
-cd $APP_HOME
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulance login hospital
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py migrate
@@ -74,13 +84,13 @@ mv pwfile /etc/mosquitto/passwd
 chown -R www-data:www-data $APP_HOME
 
 # Install certificates?
-if [ -e "/etc/certificates/letsencrypt/live/$HOSTNAME" ] ;
+if [ -e "/etc/emstrack/letsencrypt/live/$HOSTNAME" ] ;
 then
     echo "Letsencrypt certificates found"
     pip install certbot-nginx
-    ln -fs /etc/ssl/certs/DST_Root_CA_X3.pem /etc/certificates/ca.crt
-    ln -fs /etc/certificates/letsencrypt/live/$HOSTNAME/fullchain.pem /etc/certificates/srv.crt
-    ln -fs /etc/certificates/letsencrypt/live/$HOSTNAME/privkey.pem /etc/certificates/srv.key ;
+    ln -fs /etc/ssl/certs/DST_Root_CA_X3.pem /etc/emstrack/certificates/ca.crt
+    ln -fs /etc/emstrack/letsencrypt/live/$HOSTNAME/fullchain.pem /etc/emstrack/certificates/srv.crt
+    ln -fs /etc/emstrack/letsencrypt/live/$HOSTNAME/privkey.pem /etc/emstrack/certificates/srv.key ;
     certbot --authenticator standalone --installer nginx --pre-hook "service nginx stop" --post-hook "service nginx start" -d $HOSTNAME --reinstall --redirect
 else
     echo "No letsencrypt certificates found" ;
@@ -89,7 +99,7 @@ fi
 
 # Mark as initialized
 DATE=$(date +%Y-%m-%d)
-cat << EOF > /tmp/emstrack.initialized
+cat << EOF > /etc/emstrack/emstrack.initialized
 > Container initialized on $DATE
 EOF
 
