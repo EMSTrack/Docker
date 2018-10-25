@@ -1,3 +1,5 @@
+#!/bin/bash
+
 INIT_FILE=/etc/emstrack/emstrack.initialized
 if [ -f $INIT_FILE ]; then
     echo "> Container is already initialized"
@@ -49,6 +51,7 @@ sed -i'' \
     -e 's/\[database\]/'"$DB_DATABASE"'/g' \
     $APP_HOME/init/init.psql
 psql -f $APP_HOME/init/init.psql -d postgres://postgres:$DB_PASSWORD@db
+rm $APP_HOME/init/init.psql
 
 # Setup Django
 cd $APP_HOME
@@ -87,21 +90,49 @@ chown -R www-data:www-data $APP_HOME
 if [ -e "/etc/emstrack/letsencrypt/live/$HOSTNAME" ] ;
 then
     echo "Letsencrypt certificates found"
-    pip install --upgrade cryptography
-    pip install certbot-nginx
     ln -fs /etc/ssl/certs/DST_Root_CA_X3.pem /etc/emstrack/certificates/ca.crt
     ln -fs /etc/emstrack/letsencrypt/live/$HOSTNAME/fullchain.pem /etc/emstrack/certificates/srv.crt
     ln -fs /etc/emstrack/letsencrypt/live/$HOSTNAME/privkey.pem /etc/emstrack/certificates/srv.key ;
     certbot --authenticator standalone --installer nginx --pre-hook "service nginx stop" --post-hook "service nginx start" -d $HOSTNAME --reinstall --redirect
 else
     echo "No letsencrypt certificates found" ;
-    # TODO: ask if wants to run certbot
 fi
 
 # Mark as initialized
 DATE=$(date +%Y-%m-%d)
 cat << EOF > /etc/emstrack/emstrack.initialized
-> Container initialized on $DATE
+# Container initialized on $DATE
+APP_HOME=$APP_HOME
+APP_BRANCH=$APP_BRANCH
+PORT=$PORT
+SSL_PORT=$SSL_PORT
+HOSTNAME=$HOSTNAME
+
+DB_USERNAME=$DB_USERNAME
+DB_PASSWORD=$DB_PASSWORD
+DB_DATABASE=$DB_DATABASE
+DB_HOST=$DB_HOST
+
+DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY
+DJANGO_HOSTNAMES=$DJANGO_HOSTNAMES
+DJANGO_DEBUG=$DJANGO_DEBUG
+
+MQTT_USERNAME=$MQTT_USERNAME
+MQTT_PASSWORD=$MQTT_PASSWORD
+MQTT_EMAIL=$MQTT_EMAIL
+MQTT_CLIENTID=$MQTT_CLIENTID
+
+MQTT_BROKER_HTTP_IP=$MQTT_BROKER_HTTP_IP
+MQTT_BROKER_HTTP_PORT=$MQTT_BROKER_HTTP_PORT
+MQTT_BROKER_HTTP_WITH_TLS=$MQTT_BROKER_HTTP_WITH_TLS
+MQTT_BROKER_HTTP_HOSTNAME=$MQTT_BROKER_HTTP_HOSTNAME
+
+MQTT_BROKER_HOST=$MQTT_BROKER_HOST
+MQTT_BROKER_PORT=$MQTT_BROKER_PORT
+MQTT_BROKER_SSL_HOST=$MQTT_BROKER_SSL_HOST
+MQTT_BROKER_SSL_PORT=$MQTT_BROKER_SSL_PORT
+MQTT_BROKER_WEBSOCKETS_HOST=$MQTT_BROKER_WEBSOCKETS_HOST
+MQTT_BROKER_WEBSOCKETS_PORT=$MQTT_BROKER_WEBSOCKETS_PORT
 EOF
 
 exit 0

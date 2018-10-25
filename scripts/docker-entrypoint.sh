@@ -5,9 +5,6 @@ pid=0
 # Cleanup
 cleanup() {
 
-    # Go verbose
-    set -x
-    
     echo "Container stopped, cleaning up..."
 
     # stop supervisor
@@ -36,7 +33,7 @@ COMMAND=$1
 
 # Initialized?
 if [ "$COMMAND" = 'init' ]; then
-    rm /tmp/initialized
+    rm /etc/emstrack/emstrack.initialized
 fi
 
 if /usr/local/bin/docker-entrypoint-init.sh; then
@@ -44,7 +41,7 @@ if /usr/local/bin/docker-entrypoint-init.sh; then
 fi
 
 # Run commands
-if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ]; then
+if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ] || [ "$COMMAND" = 'test' ]; then
     
     echo "> Starting basic services"
     
@@ -53,14 +50,14 @@ if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ]; then
 
     echo "> Waiting for postgres"
     timer="5"
-    until pg_isready -h db -p 5432 --quiet; do
+    until pg_isready -U postgres -h db --quiet; do
 	>&2 echo "Postgres is unavailable - sleeping for $timer seconds"
 	sleep $timer
     done
 
     echo "> Starting mosquitto"
     service mosquitto start
-    sleep 5
+    sleep $timer
 
     echo "> Starting uWSGI"
     touch /app/reload
@@ -92,14 +89,10 @@ if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ]; then
     do
 	tail -f /dev/null & wait ${!}
     done
-
+    
     # Call cleanup
     cleanup
 
-elif [ "$COMMAND" = 'test' ]; then
-
-    echo "> Just testing..." 
-    
 else
 
     echo "> No services started" 

@@ -2,10 +2,8 @@ version: '3'
 services:
 
   db:
-    image: postgis:10-2.5
+    image: mdillon/postgis
     restart: always
-    environment:
-      POSTGRES_PASSWORD: password
     volumes:
      - pgdata:/var/lib/postgresql/data
      
@@ -13,8 +11,8 @@ services:
     build:
       context: .
     ports:
-     - "1883:1883"
      - "8000:8000"
+     - "1883:1883"
      - "8883:8883"
      - "8884:8884"
     volumes:
