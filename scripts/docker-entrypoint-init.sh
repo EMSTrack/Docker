@@ -1,32 +1,19 @@
-APP_HOME="${APP_HOME:=/app}"
-PORT="${PORT:=8000}"
-SSL_PORT="${SSL_PORT:=8443}"
+INIT_FILE=/tmp/emstrack.initialized
+if [ -f $INIT_FILE ]; then
+    echo "> Container is already initialized"
+    exit 1
+fi
 
-DB_USERNAME="${DB_USERNAME:=emstrack}"
-DB_PASSWORD="${DB_PASSWORD:=password}"
-DB_DATABASE="${DB_DATABASE:=emstrack}"
-DB_HOST="${DB_HOST:=db}"
+echo "> Initializing container..."
 
-DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY:=CH4NG3M3!}"
-DJANGO_HOSTNAMES="${DJANGO_HOSTNAMES:=" 'localhost', '127.0.0.1' "}"
-DJANGO_DEBUG="${DJANGO_DEBUG:=False}"
-
-MQTT_USERNAME="${MQTT_USERNAME:=admin}"
-MQTT_PASSWORD="${MQTT_PASSWORD:=cruzrojaadmin}"
-MQTT_EMAIL="${MQTT_EMAIL:=webmaster@cruzroja.ucsd.edu}"
-MQTT_CLIENTID="${MQTT_CLIENTID:=mqttclient}"
-
-MQTT_BROKER_HTTP_IP="${MQTT_BROKER_HTTP_IP:=127.0.0.1}"
-MQTT_BROKER_HTTP_PORT="${MQTT_BROKER_HTTP_PORT:=$PORT}"
-MQTT_BROKER_HTTP_WITH_TLS="${MQTT_BROKER_HTTP_WITH_TLS:=false}"
-MQTT_BROKER_HTTP_HOSTNAME="${MQTT_BROKER_HTTP_HOSTNAME:=localhost}"
-
-MQTT_BROKER_HOST="${MQTT_BROKER_HOST:=localhost}"
-MQTT_BROKER_PORT="${MQTT_BROKER_PORT:=1883}"
-MQTT_BROKER_SSL_HOST="${MQTT_BROKER_SSL_HOST:=localhost}"
-MQTT_BROKER_SSL_PORT="${MQTT_BROKER_SSL_PORT:=8883}"
-MQTT_BROKER_WEBSOCKETS_HOST="${MQTT_BROKER_WEBSOCKETS_HOST:=localhost}"
-MQTT_BROKER_WEBSOCKETS_PORT="${MQTT_BROKER_WEBSOCKETS_PORT:=8884}"
+echo "> Reading settings from /etc/emstrack.defaults..."
+set -o allexport
+source /etc/emstrack.defaults
+if [ -f /etc/emstrack.init ]; then
+    echo "> Reading settings from /etc/emstrack.init..."
+    source /etc/emstrack.init
+fi
+set +o allexport
 
 # Setup mosquitto
 sed -i'' \
@@ -55,7 +42,6 @@ sed -i'' \
 psql -f $APP_HOME/init/init.psql -d postgres://postgres:$DB_PASSWORD@db
 
 # Setup Django
-cd $APP_HOME
 sed -i'' \
     -e 's/\[username\]/'"$DB_USERNAME"'/g' \
     -e 's/\[password\]/'"$DB_PASSWORD"'/g' \
@@ -74,7 +60,8 @@ sed -i'' \
     -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
     -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
-    emstrack/settings.py
+    $APP_HOME/emstrack/settings.py
+cd $APP_HOME
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulance login hospital
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py migrate
@@ -86,6 +73,7 @@ mv pwfile /etc/mosquitto/passwd
 # Change ownership of app to www-data
 chown -R www-data:www-data $APP_HOME
 
+# Install certificates?
 if [ -e "/etc/certificates/letsencrypt/live/$HOSTNAME" ] ;
 then
     echo "Letsencrypt certificates found"
@@ -96,4 +84,13 @@ then
     certbot --authenticator standalone --installer nginx --pre-hook "service nginx stop" --post-hook "service nginx start" -d $HOSTNAME --reinstall --redirect
 else
     echo "No letsencrypt certificates found" ;
+    # TODO: ask if wants to run certbot
 fi
+
+# Mark as initialized
+DATE=$(date +%Y-%m-%d)
+cat << EOF > /tmp/emstrack.initialized
+> Container initialized on $DATE
+EOF
+
+exit 0
