@@ -6,7 +6,9 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: password
-
+    volumes:
+     - pgdata:/var/lib/postgresql/data
+     
   emstrack:
     build:
       context: .
@@ -20,4 +22,5 @@ services:
     tty: true
 
 volumes:
+  pgdata:
   settings:
