@@ -87,6 +87,7 @@ chown -R www-data:www-data $APP_HOME
 if [ -e "/etc/emstrack/letsencrypt/live/$HOSTNAME" ] ;
 then
     echo "Letsencrypt certificates found"
+    pip install --upgrade cryptography
     pip install certbot-nginx
     ln -fs /etc/ssl/certs/DST_Root_CA_X3.pem /etc/emstrack/certificates/ca.crt
     ln -fs /etc/emstrack/letsencrypt/live/$HOSTNAME/fullchain.pem /etc/emstrack/certificates/srv.crt
