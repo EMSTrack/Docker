@@ -106,8 +106,13 @@ RUN mv WebServerAndClient $APP_HOME
 WORKDIR $APP_HOME
 RUN pip install -r requirements.txt
 
-# Setup django
-COPY django/settings.py $APP_HOME/emstrack/settings.py
+# Persistent settings
+# Certificates are ready for letsencrypt
+# Just put current keys in /etc/emstrack/letsencrypt and you will be done
+COPY etc /etc
+RUN mkdir -p /etc/emstrack/letsencrypt
+RUN ln -s /etc/emstrack/letsencrypt /etc/letsencrypt
+RUN ln -s /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
 # Setup mqttclient
 COPY supervisor/mqttclient.conf /etc/supervisor/conf.d/mqttclient.conf
@@ -122,12 +127,6 @@ RUN ldconfig
 
 # Init files
 COPY postgresql/init.psql $APP_HOME/init/init.psql
-
-# Certificates are ready for letsencrypt
-# Just put current keys in /etc/emstrack/letsencrypt and you will be done
-COPY etc /etc
-RUN mkdir -p /etc/emstrack/letsencrypt
-RUN ln -s /etc/emstrack/letsencrypt /etc/letsencrypt
 
 # Init script
 COPY scripts/docker-entrypoint-init.sh /usr/local/bin/docker-entrypoint-init.sh

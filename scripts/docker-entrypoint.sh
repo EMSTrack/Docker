@@ -51,8 +51,12 @@ if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ]; then
     # Trap SIGTERM
     trap 'kill ${!}; cleanup' SIGTERM
 
-    echo "> Starting postgres"
-    service postgresql start
+    echo "> Waiting for postgres"
+    timer="5"
+    until pg_isready -h db -p 5432 --quiet; do
+	>&2 echo "Postgres is unavailable - sleeping for $timer seconds"
+	sleep $timer
+    done
 
     echo "> Starting mosquitto"
     service mosquitto start
