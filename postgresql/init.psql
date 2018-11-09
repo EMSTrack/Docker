@@ -1,6 +1,7 @@
 DROP DATABASE [database];
 DROP USER [username];
 
+ALTER USER postgres WITH PASSWORD '[password]';
 CREATE USER [username] WITH PASSWORD '[password]';
 -- CREATE EXTENSION adminpack;
 CREATE DATABASE [database];
