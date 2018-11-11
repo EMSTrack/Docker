@@ -16,7 +16,7 @@ python manage.py makemigrations
 python manage.py migrate
 
 echo "> Upgrading static files"
-python manage.py collectstatic
+python manage.py collectstatic --no-input
 
 # start services
 echo "> Restarting services"
