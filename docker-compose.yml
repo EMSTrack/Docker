@@ -17,8 +17,10 @@ services:
      - "8884:8884"
     volumes:
      - settings:/etc/emstrack
+     - mosquitto:/etc/mosquitto
     tty: true
 
 volumes:
   pgdata:
   settings:
+  mosquitto:
