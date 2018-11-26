@@ -68,7 +68,12 @@ RUN sed -e 's/WITH_SRV:=yes/WITH_SRV:=no/' \
         -e 's/WITH_WEBSOCKETS:=no/WITH_WEBSOCKETS:=yes/' \
 	-e 's/WITH_DOCS:=yes/WITH_DOCS:=no/' \
 	config.mk.in > config.mk
+
+RUN mkdir -p /etc/emstrack/mosquitto/etc
+RUN ln -s /etc/emstrack/mosquitto/etc /etc/mosquitto
+
 RUN make binary install
+
 RUN useradd -M mosquitto
 RUN usermod -L mosquitto
 COPY mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
@@ -76,10 +81,18 @@ COPY mosquitto/conf.d /etc/mosquitto/conf.d
 COPY init.d/mosquitto /etc/init.d/mosquitto
 RUN chmod +x /etc/init.d/mosquitto
 RUN update-rc.d mosquitto defaults
-RUN mkdir /var/log/mosquitto
-RUN chown -R mosquitto:mosquitto /var/log/mosquitto
-RUN mkdir /var/lib/mosquitto
-RUN chown -R mosquitto:mosquitto /var/lib/mosquitto
+
+RUN mkdir -p /etc/emstrack/mosquitto/log
+RUN ln -s /etc/emstrack/mosquitto/log /var/log/mosquitto
+# RUN mkdir /var/log/mosquitto
+RUN chown -h mosquitto:mosquitto /var/log/mosquitto
+
+RUN mkdir -p /etc/emstrack/mosquitto/lib
+RUN ln -s /etc/emstrack/mosquitto/lib /var/lib/mosquitto
+# RUN mkdir /var/lib/mosquitto
+RUN chown -h mosquitto:mosquitto /var/lib/mosquitto
+
+RUN chown -R mosquitto:mosquitto /etc/emstrack/mosquitto
 
 # Download source code for mosquitto-auth-plug
 #RUN git clone https://github.com/EMSTrack/mosquitto-auth-plug
