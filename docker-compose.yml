@@ -17,8 +17,10 @@ services:
      - "8884:8884"
     volumes:
      - settings:/etc/emstrack
+     - nginx:/etc/nginx
     tty: true
 
 volumes:
   pgdata:
   settings:
+  nginx:
