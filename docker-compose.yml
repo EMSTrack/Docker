@@ -18,9 +18,11 @@ services:
     volumes:
      - settings:/etc/emstrack
      - nginx:/etc/nginx
+     - logs:/var/log
     tty: true
 
 volumes:
   pgdata:
   settings:
   nginx:
+  logs:

@@ -82,10 +82,10 @@ COPY init.d/mosquitto /etc/init.d/mosquitto
 RUN chmod +x /etc/init.d/mosquitto
 RUN update-rc.d mosquitto defaults
 
-RUN mkdir -p /etc/emstrack/mosquitto/log
-RUN ln -s /etc/emstrack/mosquitto/log /var/log/mosquitto
-# RUN mkdir /var/log/mosquitto
-RUN chown -h mosquitto:mosquitto /var/log/mosquitto
+#RUN mkdir -p /etc/emstrack/mosquitto/log
+#RUN ln -s /etc/emstrack/mosquitto/log /var/log/mosquitto
+RUN mkdir /var/log/mosquitto
+RUN chown mosquitto:mosquitto /var/log/mosquitto
 
 RUN mkdir -p /etc/emstrack/mosquitto/lib
 RUN ln -s /etc/emstrack/mosquitto/lib /var/lib/mosquitto
@@ -122,6 +122,10 @@ RUN mv WebServerAndClient $APP_HOME
 # Install python requirements
 WORKDIR $APP_HOME
 RUN pip install -r requirements.txt
+
+# Create django log directory
+RUN mkdir /var/log/django
+RUN chown www-data:www-data /var/log/django
 
 # Persistent settings
 # Certificates are ready for letsencrypt
