@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'ambulance.apps.AmbulanceConfig',
     'hospital.apps.HospitalConfig',
     'login.apps.LoginConfig',
+    'equipment.apps.EquipmentConfig',
     'mqtt',
     'emstrack',
     'rest_framework',
@@ -197,18 +198,18 @@ MESSAGE_TAGS = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django/debug.log',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
+    # 'handlers': {
+    #     'file': {
+    #         'level': 'DEBUG',
+    #         'class': 'logging.FileHandler',
+    #         'filename': '/var/log/django/debug.log',
+    #     },
+    # },
+    # 'loggers': {
+    #     'django': {
+    #         'handlers': ['file'],
+    #         'level': 'DEBUG',
+    #         'propagate': True,
+    #     },
+    # },
 }
