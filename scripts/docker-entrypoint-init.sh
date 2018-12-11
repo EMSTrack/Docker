@@ -76,7 +76,7 @@ sed -i'' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
     $APP_HOME/emstrack/settings.py
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations
-DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulance login hospital
+DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulance login hospital equipment
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py migrate
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py collectstatic
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py bootstrap
