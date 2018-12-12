@@ -55,7 +55,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis'
+    'django.contrib.gis',
+    'jquery',
+    'djangoformsetjs',
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
