@@ -56,6 +56,7 @@ rm $APP_HOME/init/init.psql
 # Setup Django
 cd $APP_HOME
 git checkout $APP_BRANCH
+pip install -r requirements.txt
 sed -i'' \
     -e 's/\[username\]/'"$DB_USERNAME"'/g' \
     -e 's/\[password\]/'"$DB_PASSWORD"'/g' \
