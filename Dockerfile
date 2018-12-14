@@ -59,7 +59,7 @@ RUN pip install certbot-nginx
 WORKDIR /src
 RUN git clone https://github.com/eclipse/mosquitto
 WORKDIR /src/mosquitto
-RUN git checkout 8025f5a29b78551e1d5e9ea13ae9dacabb6830da
+# RUN git checkout 8025f5a29b78551e1d5e9ea13ae9dacabb6830da
 
 # Configure and build mosquitto
 WORKDIR /src/mosquitto
@@ -99,7 +99,7 @@ RUN chown -R mosquitto:mosquitto /etc/emstrack/mosquitto
 WORKDIR /src
 RUN git clone https://github.com/jpmens/mosquitto-auth-plug
 WORKDIR /src/mosquitto-auth-plug
-RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
+# RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
 
 # Configure and build mosquitto-auth-plug
 WORKDIR /src/mosquitto-auth-plug
