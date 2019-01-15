@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'emstrack',
     'rest_framework',
     'rest_framework_swagger',
+    'rest_framework.authtoken',
     'django_nose',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -180,6 +181,7 @@ MQTT = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
