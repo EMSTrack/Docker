@@ -49,6 +49,9 @@ RUN sed -i'' \
         -e 's/bin\/python/bin\/python2/' \
 	/usr/bin/supervisorctl
 
+# Install cron
+RUN apt-get install -y cron
+
 # Install certbot
 RUN pip install --upgrade cryptography
 RUN pip install certbot-nginx
