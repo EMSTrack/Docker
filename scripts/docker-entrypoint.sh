@@ -72,8 +72,8 @@ if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ] || [ "$COMMAND" = 'test' ]
 
 	echo "> Starting all services"
 	
-	echo "> Starting mqttseed"
-	python manage.py mqttseed
+	# echo "> Starting mqttseed"
+	# python manage.py mqttseed
 
 	echo "> Starting mqttclient"
 	service supervisor start
