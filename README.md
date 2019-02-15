@@ -100,4 +100,4 @@ you do not want to run into browser and client security issues with the self-sig
 3) directory `init.d` contains file for configuring the mosquitto service
 4) directory `postgresql` contain files for configuring postgresql
 5) directory `supervisor` contains files for configuring supervisord
-6) directory `certificates` contains the ssl certificates to run your server
+6) directory `certificates` contains the ssl certificates to run your servers
