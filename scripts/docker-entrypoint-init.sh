@@ -83,6 +83,7 @@ DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py collectstatic
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py bootstrap
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py mqttpwfile
 mv pwfile /etc/mosquitto/passwd
+DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py compilemessages
 
 # Change ownership of app to www-data
 chown -R www-data:www-data $APP_HOME

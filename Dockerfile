@@ -52,6 +52,9 @@ RUN sed -i'' \
 # Install cron
 RUN apt-get install -y cron
 
+# Install gettext
+RUN apt-get install -y gettext
+
 # Install certbot
 RUN pip install --upgrade cryptography
 RUN pip install certbot-nginx
