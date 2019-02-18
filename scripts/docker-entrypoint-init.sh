@@ -28,6 +28,7 @@ if [ -f $INIT_FILE ]; then
     mv pwfile /etc/mosquitto/passwd
     python manage.py compilemessages
 
+    # exit with error
     exit 1
 fi
 
