@@ -128,6 +128,7 @@ RUN mv WebServerAndClient $APP_HOME
 # Checkout branch and install python requirements
 WORKDIR $APP_HOME
 RUN git checkout $APP_BRANCH
+RUN git pull
 RUN pip install -r requirements.txt
 
 # Change ownership of app to www-data
