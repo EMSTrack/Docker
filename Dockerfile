@@ -69,7 +69,7 @@ WORKDIR /src/mosquitto
 
 # Configure and build mosquitto
 WORKDIR /src/mosquitto
-RUN cp config.mk config.mk.in
+COPY config.mk config.mk.in
 RUN sed -e 's/WITH_SRV:=yes/WITH_SRV:=no/' \
         -e 's/WITH_WEBSOCKETS:=no/WITH_WEBSOCKETS:=yes/' \
 	-e 's/WITH_DOCS:=yes/WITH_DOCS:=no/' \
