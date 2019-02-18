@@ -3,7 +3,7 @@
 echo "> ATTENTION: stop services before backing up database to preserve integrity"
 
 echo "> Backing up database"
-mkdir /etc/emstrack/fixtures
-python manage dumpdata > /etc/emstrack/fixtures/backup.db
+mkdir -p /etc/emstrack/fixtures
+python manage.py dumpdata > /etc/emstrack/fixtures/backup.db
 
 echo "> Done backing up database"
