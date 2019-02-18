@@ -1,13 +1,5 @@
 #!/bin/bash
 
-INIT_FILE=/etc/emstrack/emstrack.initialized
-if [ -f $INIT_FILE ]; then
-    echo "> Container is already initialized"
-    exit 1
-fi
-
-echo "> Initializing container..."
-
 echo "> Reading settings from /etc/emstrack.defaults..."
 set -o allexport
 source /etc/emstrack/emstrack.defaults
@@ -18,6 +10,18 @@ fi
 set +o allexport
 
 echo "APP_HOME=$APP_HOME"
+
+INIT_FILE=/etc/emstrack/emstrack.initialized
+if [ -f $INIT_FILE ]; then
+    echo "> Container is already initialized"
+
+    echo "> Linking settings"
+    ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
+
+    exit 1
+fi
+
+echo "> Initializing container..."
 
 # Setup mosquitto
 sed -i'' \
@@ -55,8 +59,6 @@ rm $APP_HOME/init/init.psql
 
 # Setup Django
 cd $APP_HOME
-git checkout $APP_BRANCH
-pip install -r requirements.txt
 sed -i'' \
     -e 's/\[username\]/'"$DB_USERNAME"'/g' \
     -e 's/\[password\]/'"$DB_PASSWORD"'/g' \
@@ -75,7 +77,8 @@ sed -i'' \
     -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
     -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
-    $APP_HOME/emstrack/settings.py
+    /etc/emstrack/settings.py
+ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulance login hospital equipment
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py migrate
@@ -84,11 +87,6 @@ DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py bootstrap
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py mqttpwfile
 mv pwfile /etc/mosquitto/passwd
 DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py compilemessages
-# save settings
-cp $APP_HOME/emstrack/settings.py /etc/emstrack/settings.py
-
-# Change ownership of app to www-data
-chown -R www-data:www-data $APP_HOME
 
 # Install certificates?
 if [ -e "/etc/emstrack/letsencrypt/live/$HOSTNAME" ] ;

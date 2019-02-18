@@ -125,9 +125,13 @@ RUN git clone https://github.com/EMSTrack/WebServerAndClient
 RUN rm -fr $APP_HOME
 RUN mv WebServerAndClient $APP_HOME
 
-# Install python requirements
+# Checkout branch and install python requirements
 WORKDIR $APP_HOME
+RUN git checkout $APP_BRANCH
 RUN pip install -r requirements.txt
+
+# Change ownership of app to www-data
+RUN chown -R www-data:www-data $APP_HOME
 
 # Create django log directory
 RUN mkdir /var/log/django
