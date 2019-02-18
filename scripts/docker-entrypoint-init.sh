@@ -18,6 +18,10 @@ if [ -f $INIT_FILE ]; then
     echo "> Linking settings"
     ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
+    echo "> Recovering static files"
+    python manage.py collectstatic --no-input
+    python manage.py compilemessages
+
     # exit
     exit 1
 fi
