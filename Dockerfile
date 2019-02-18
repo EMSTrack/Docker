@@ -176,8 +176,10 @@ RUN chmod +x /usr/local/bin/emstrack-down
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Add VOLUMEs to allow backup of config, logs and databases
+# Add VOLUME to allow backup of config, logs and databases
 VOLUME ["/etc/emstrack"]
+VOLUME ["/etc/nginx"]
+VOLUME ["/var/log"]
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["all"]

@@ -18,6 +18,16 @@ if [ -f $INIT_FILE ]; then
     echo "> Linking settings"
     ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
+    echo "> Updating django"
+    python manage.py makemigrations
+    python manage.py makemigrations ambulance login hospital equipment
+    python manage.py migrate
+    python manage.py collectstatic
+    python manage.py bootstrap
+    python manage.py mqttpwfile
+    mv pwfile /etc/mosquitto/passwd
+    python manage.py compilemessages
+
     exit 1
 fi
 
