@@ -45,7 +45,7 @@ if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ] || [ "$COMMAND" = 'test' ]
 
     echo "> Linking settings"
 
-    ln -s /etc/emstrack/settings.py /app/emstrack/settings.py
+    ln -sf /etc/emstrack/settings.py /app/emstrack/settings.py
 
     echo "> Starting basic services"
     
