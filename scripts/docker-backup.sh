@@ -2,7 +2,8 @@
 
 if [ $# -eq 0 ]
   then
-    echo "Please provide the name of the container"
+    echo "error: please provide the name of the container"
+    exit 1
 fi
 
 echo "> Copying fixtures"
