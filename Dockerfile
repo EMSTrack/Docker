@@ -182,6 +182,8 @@ COPY scripts/emstrack-up.sh /usr/local/bin/emstrack-up
 RUN chmod +x /usr/local/bin/emstrack-up
 COPY scripts/emstrack-down.sh /usr/local/bin/emstrack-down
 RUN chmod +x /usr/local/bin/emstrack-down
+COPY scripts/emstrack-backup.sh /usr/local/bin/emstrack-backup
+RUN chmod +x /usr/local/bin/emstrack-backup
 
 # Entrypoint script
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

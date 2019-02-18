@@ -84,10 +84,16 @@ sed -i'' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
     /etc/emstrack/settings.py
 ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
-python manage.py makemigrations
 python manage.py makemigrations ambulance login hospital equipment
 python manage.py migrate
-python manage.py bootstrap
+
+# Has backup?
+if [ -e "/etc/emstrack/fixtures/backup.db" ] ;
+then
+    python manage.py loaddata /etc/emstrack/fixtures/backup.db
+else
+    python manage.py bootstrap
+fi
 python manage.py mqttpwfile
 mv pwfile /etc/mosquitto/passwd
 python manage.py collectstatic
