@@ -90,8 +90,10 @@ python manage.py migrate
 # Has backup?
 if [ -e "/etc/emstrack/fixtures/backup.db" ] ;
 then
+    echo "Fixtures found"
     python manage.py loaddata /etc/emstrack/fixtures/backup.db
 else
+    echo "Fixtures not found, bootstraping"
     python manage.py bootstrap
 fi
 python manage.py mqttpwfile
