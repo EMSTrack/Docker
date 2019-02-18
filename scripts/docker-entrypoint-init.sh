@@ -88,10 +88,10 @@ python manage.py makemigrations ambulance login hospital equipment
 python manage.py migrate
 
 # Has backup?
-if [ -e "/etc/emstrack/fixtures/backup.db" ] ;
+if [ -e "/etc/emstrack/fixtures/backup.json" ] ;
 then
     echo "Fixtures found"
-    python manage.py loaddata /etc/emstrack/fixtures/backup.db
+    python manage.py loaddata /etc/emstrack/fixtures/backup.json
 else
     echo "Fixtures not found, bootstraping"
     python manage.py bootstrap
