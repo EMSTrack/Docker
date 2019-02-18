@@ -136,9 +136,9 @@ RUN mkdir /etc/emstrack/migrations
 RUN mkdir /etc/emstrack/migrations/ambulance
 RUN ln -s /etc/emstrack/migrations/ambulance $APP_HOME/ambulance/migrations
 RUN mkdir /etc/emstrack/migrations/login
-RUN ln -s /etc/emstrack/migrations/login $APP_HOME/login/migrations
+RUN ln -s /etc/emstrack/migrations/login     $APP_HOME/login/migrations
 RUN mkdir /etc/emstrack/migrations/hospital
-RUN ln -s /etc/emstrack/migrations/hospital $APP_HOME/hospital/migrations
+RUN ln -s /etc/emstrack/migrations/hospital  $APP_HOME/hospital/migrations
 RUN mkdir /etc/emstrack/migrations/equipment
 RUN ln -s /etc/emstrack/migrations/equipment $APP_HOME/equipment/migrations
 

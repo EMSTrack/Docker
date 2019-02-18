@@ -18,17 +18,7 @@ if [ -f $INIT_FILE ]; then
     echo "> Linking settings"
     ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
-    echo "> Updating django"
-    python manage.py makemigrations
-    python manage.py makemigrations ambulance login hospital equipment
-    python manage.py migrate
-    python manage.py collectstatic
-    python manage.py bootstrap
-    python manage.py mqttpwfile
-    mv pwfile /etc/mosquitto/passwd
-    python manage.py compilemessages
-
-    # exit with error
+    # exit
     exit 1
 fi
 
@@ -90,14 +80,14 @@ sed -i'' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
     /etc/emstrack/settings.py
 ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
-DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations
-DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py makemigrations ambulance login hospital equipment
-DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py migrate
-DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py collectstatic
-DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py bootstrap
-DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py mqttpwfile
+python manage.py makemigrations
+python manage.py makemigrations ambulance login hospital equipment
+python manage.py migrate
+python manage.py bootstrap
+python manage.py mqttpwfile
 mv pwfile /etc/mosquitto/passwd
-DJANGO_ENABLE_MQTT_SIGNALS="False" python manage.py compilemessages
+python manage.py collectstatic
+python manage.py compilemessages
 
 # Install certificates?
 if [ -e "/etc/emstrack/letsencrypt/live/$HOSTNAME" ] ;
