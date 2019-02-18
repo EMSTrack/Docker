@@ -26,9 +26,6 @@ if [ "$1" = 'all' ]; then
 
     echo "> Starting all services"
     
-    # echo "> Starting mqttseed"
-    # python manage.py mqttseed
-    
     echo "> Starting mqttclient"
     service supervisor start
     supervisorctl start mqttclient

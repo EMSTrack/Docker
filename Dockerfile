@@ -174,13 +174,13 @@ COPY postgresql/init.psql $APP_HOME/init/init.psql
 # Init script
 COPY scripts/docker-entrypoint-init.sh /usr/local/bin/docker-entrypoint-init.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint-init.sh
-COPY scripts/docker-test.sh /usr/local/bin/emstrack-test
+COPY scripts/emstrack-test.sh /usr/local/bin/emstrack-test
 RUN chmod +x /usr/local/bin/emstrack-test
-COPY scripts/docker-upgrade.sh /usr/local/bin/emstrack-upgrade
+COPY scripts/emstrack-upgrade.sh /usr/local/bin/emstrack-upgrade
 RUN chmod +x /usr/local/bin/emstrack-upgrade
-COPY scripts/docker-up.sh /usr/local/bin/emstrack-up
+COPY scripts/emstrack-up.sh /usr/local/bin/emstrack-up
 RUN chmod +x /usr/local/bin/emstrack-up
-COPY scripts/docker-down.sh /usr/local/bin/emstrack-down
+COPY scripts/emstrack-down.sh /usr/local/bin/emstrack-down
 RUN chmod +x /usr/local/bin/emstrack-down
 
 # Entrypoint script
