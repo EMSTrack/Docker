@@ -131,6 +131,17 @@ RUN git checkout $APP_BRANCH
 RUN git pull
 RUN pip install -r requirements.txt
 
+# link migration directories into persistent volume
+RUN mkdir /etc/emstrack/migrations
+RUN mkdir /etc/emstrack/migrations/ambulance
+RUN ln -s /etc/emstrack/migrations/ambulance $APP_HOME/ambulance/migrations
+RUN mkdir /etc/emstrack/migrations/login
+RUN ln -s /etc/emstrack/migrations/login $APP_HOME/login/migrations
+RUN mkdir /etc/emstrack/migrations/hospital
+RUN ln -s /etc/emstrack/migrations/hospital $APP_HOME/hospital/migrations
+RUN mkdir /etc/emstrack/migrations/equipment
+RUN ln -s /etc/emstrack/migrations/equipment $APP_HOME/equipment/migrations
+
 # Change ownership of app to www-data
 RUN chown -R www-data:www-data $APP_HOME
 
@@ -178,6 +189,5 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Add VOLUME to allow backup of config, logs and databases
 VOLUME etc/emstrack /etc/nginx /var/log
-VOLUME $APP_HOME/ambulance $APP_HOME/login $APP_HOME/hospital $APP_HOME/equipment
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["all"]
