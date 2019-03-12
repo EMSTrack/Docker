@@ -1,5 +1,5 @@
 # Using ubuntu as a base image
-FROM ubuntu:18.04
+FROM ubuntu:18.10
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -178,7 +178,6 @@ RUN ldconfig
 COPY postgresql/init.psql $APP_HOME/init/init.psql
 
 # NPM packages
-RUN apt-get install -y npm
 RUN npm install --save-dev webpack webpack-bundle-tracker babel babel-loader
 
 # Init script
