@@ -1,5 +1,5 @@
 # Using ubuntu as a base image
-FROM ubuntu:18.10
+FROM ubuntu:18.04
 
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -53,10 +53,9 @@ RUN apt-get install -y cron
 RUN apt-get install -y gettext
 
 # Install npm
-RUN apt-get install -y libssl1.0-dev
-RUN apt-get install -y nodejs-dev
-RUN apt-get install -y node-gyp
-RUN apt-get install -y npm
+RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN apt-get install -y nodejs
 
 # Install libwebsockets
 RUN apt-get install -y libwebsockets-dev
