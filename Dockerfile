@@ -55,6 +55,12 @@ RUN apt-get install -y cron
 # Install gettext
 RUN apt-get install -y gettext
 
+# Install npm
+RUN apt-get install -y libssl1.0-dev
+RUN apt-get install -y nodejs-dev
+RUN apt-get install -y node-gyp
+RUN apt-get install -y npm
+
 # Install certbot
 RUN pip install --upgrade cryptography
 RUN pip install certbot-nginx
@@ -170,6 +176,9 @@ RUN ldconfig
 
 # Init files
 COPY postgresql/init.psql $APP_HOME/init/init.psql
+
+# NPM packages
+RUN npm install --save-dev webpack webpack-bundle-tracker babel babel-loader
 
 # Init script
 COPY scripts/docker-entrypoint-init.sh /usr/local/bin/docker-entrypoint-init.sh

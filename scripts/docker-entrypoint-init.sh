@@ -82,6 +82,7 @@ sed -i'' \
     -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
     -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
+    -e 's/\[access_token\]/'"$ACCESS_TOKEN"'/g' \
     /etc/emstrack/settings.py
 ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 python manage.py makemigrations ambulance login hospital equipment

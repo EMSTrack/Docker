@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 
+from django.contrib.messages import constants as messages
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -59,6 +61,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'jquery',
     'djangoformsetjs',
+    'webpack_loader',
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -179,9 +182,7 @@ MQTT = {
     'BROKER_WEBSOCKETS_PORT': '[mqtt-broker-websockets-port]'
 }
 
-# Custom user
-#AUTH_USER_MODEL = 'ambulance.User'
-
+# REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
@@ -193,8 +194,6 @@ REST_FRAMEWORK = {
 }
 
 # Custom message tags
-from django.contrib.messages import constants as messages
-
 MESSAGE_TAGS = {
     messages.DEBUG: 'alert-info',
     messages.INFO: 'alert-info',
@@ -203,6 +202,18 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 
+# Access Token
+ACCESS_TOKEN = [access_token]
+
+# Webpack Loader
+WEBPACK_LOADER = {
+    'MAP': {
+        'BUNDLE_DIR_NAME': 'bundles/map',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-map-stats.json'),
+    }
+}
+
+# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
