@@ -203,7 +203,7 @@ MESSAGE_TAGS = {
 }
 
 # Access Token
-ACCESS_TOKEN = [access_token]
+ACCESS_TOKEN = '[access_token]'
 
 # Webpack Loader
 WEBPACK_LOADER = {
