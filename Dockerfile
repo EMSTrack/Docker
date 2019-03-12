@@ -26,9 +26,6 @@ RUN apt-get install -y vim sudo less
 RUN apt-get install -y uuid-dev
 RUN apt-get install -y libcurl4-openssl-dev
 
-# Install libwebsockets
-RUN apt-get install -y libwebsockets-dev
-
 # Install nginx
 RUN apt-get install -y nginx
 
@@ -60,6 +57,9 @@ RUN apt-get install -y libssl1.0-dev
 RUN apt-get install -y nodejs-dev
 RUN apt-get install -y node-gyp
 RUN apt-get install -y npm
+
+# Install libwebsockets
+RUN apt-get install -y libwebsockets-dev
 
 # Install certbot
 RUN pip install --upgrade cryptography
