@@ -178,7 +178,7 @@ RUN ldconfig
 COPY postgresql/init.psql $APP_HOME/init/init.psql
 
 # NPM packages
-RUN apt install npm
+RUN apt-get install -y npm
 RUN npm install --save-dev webpack webpack-bundle-tracker babel babel-loader
 
 # Init script
