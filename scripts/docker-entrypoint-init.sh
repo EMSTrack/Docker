@@ -18,6 +18,9 @@ if [ -f $INIT_FILE ]; then
     echo "> Linking settings"
     ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
+    echo "> Creating webpackage bundles"
+     ./node_modules/.bin/webpack --config webpack-ambulance-config.js
+
     echo "> Recovering static files"
     python manage.py collectstatic --no-input
     python manage.py compilemessages
@@ -99,6 +102,7 @@ else
 fi
 python manage.py mqttpwfile
 mv pwfile /etc/mosquitto/passwd
+./node_modules/.bin/webpack --config webpack-ambulance-config.js
 python manage.py collectstatic
 python manage.py compilemessages
 

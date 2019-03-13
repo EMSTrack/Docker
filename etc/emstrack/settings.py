@@ -213,7 +213,6 @@ WEBPACK_LOADER = {
     }
 }
 
-
 # Logging
 LOGGING = {
     'version': 1,

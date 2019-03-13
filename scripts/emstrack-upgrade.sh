@@ -16,6 +16,7 @@ python manage.py makemigrations
 python manage.py migrate
 
 echo "> Upgrading static files"
+./node_modules/.bin/webpack --config webpack-ambulance-config.js
 python manage.py collectstatic --no-input
 python manage.py compilemessages
 
