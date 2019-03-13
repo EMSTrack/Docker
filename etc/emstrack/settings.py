@@ -208,7 +208,7 @@ ACCESS_TOKEN = '[access_token]'
 # Webpack Loader
 WEBPACK_LOADER = {
     'MAP': {
-        'BUNDLE_DIR_NAME': 'bundles/map',
+        'BUNDLE_DIR_NAME': 'bundles/map/',
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-map-stats.json'),
     }
 }
