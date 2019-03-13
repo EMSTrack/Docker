@@ -21,6 +21,7 @@ if [ -f $INIT_FILE ]; then
     echo "> Creating webpackage bundles"
      ./node_modules/.bin/webpack --config webpack-ambulance-config.js
      ./node_modules/.bin/webpack --config webpack-point-widget-config.js
+     ./node_modules/.bin/webpack --config webpack-call-config.js
 
     echo "> Recovering static files"
     python manage.py collectstatic --no-input
@@ -105,6 +106,7 @@ python manage.py mqttpwfile
 mv pwfile /etc/mosquitto/passwd
 ./node_modules/.bin/webpack --config webpack-ambulance-config.js
 ./node_modules/.bin/webpack --config webpack-point-widget-config.js
+./node_modules/.bin/webpack --config webpack-call-config.js
 python manage.py collectstatic
 python manage.py compilemessages
 

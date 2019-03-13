@@ -219,6 +219,10 @@ WEBPACK_LOADER = {
         'BUNDLE_DIR_NAME': 'bundles/point-widget/',
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-point-widget-stats.json'),
     },
+    'CALL': {
+        'BUNDLE_DIR_NAME': 'bundles/call/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-call-stats.json'),
+    },
 }
 
 # Logging
