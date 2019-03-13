@@ -203,7 +203,8 @@ MESSAGE_TAGS = {
 }
 
 # Access Token
-ACCESS_TOKEN = '[access_token]'
+MAP_PROVIDER = '[map_provider]'
+MAP_PROVIDER_TOKEN = '[map_provider_token]'
 
 # Webpack Loader
 WEBPACK_LOADER = {
