@@ -19,9 +19,10 @@ if [ -f $INIT_FILE ]; then
     ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
     echo "> Creating webpackage bundles"
-     ./node_modules/.bin/webpack --config webpack-ambulance-config.js
-     ./node_modules/.bin/webpack --config webpack-point-widget-config.js
-     ./node_modules/.bin/webpack --config webpack-call-config.js
+    ./node_modules/.bin/webpack --config webpack-map-config.js
+    ./node_modules/.bin/webpack --config webpack-ambulance-config.js
+    ./node_modules/.bin/webpack --config webpack-point-widget-config.js
+    ./node_modules/.bin/webpack --config webpack-call-config.js
 
     echo "> Recovering static files"
     python manage.py collectstatic --no-input
@@ -104,6 +105,7 @@ else
 fi
 python manage.py mqttpwfile
 mv pwfile /etc/mosquitto/passwd
+./node_modules/.bin/webpack --config webpack-map-config.js
 ./node_modules/.bin/webpack --config webpack-ambulance-config.js
 ./node_modules/.bin/webpack --config webpack-point-widget-config.js
 ./node_modules/.bin/webpack --config webpack-call-config.js
