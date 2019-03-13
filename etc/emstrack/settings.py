@@ -210,7 +210,15 @@ WEBPACK_LOADER = {
     'MAP': {
         'BUNDLE_DIR_NAME': 'bundles/map/',
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-map-stats.json'),
-    }
+    },
+    'AMBULANCE': {
+        'BUNDLE_DIR_NAME': 'bundles/ambulance/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-ambulance-stats.json'),
+    },
+    'POINT_WIDGET': {
+        'BUNDLE_DIR_NAME': 'bundles/point-widget/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-point-widget-stats.json'),
+    },
 }
 
 # Logging
