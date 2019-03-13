@@ -6,6 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Arguments
 ARG APP_HOME=/app
+ARG APP_BRANCH=master
 
 # Install dependencies
 RUN apt-get update -y
