@@ -208,6 +208,10 @@ MAP_PROVIDER_TOKEN = '[map_provider_token]'
 
 # Webpack Loader
 WEBPACK_LOADER = {
+    'BASE': {
+        'BUNDLE_DIR_NAME': 'bundles/base/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-base-stats.json'),
+    },
     'MAP': {
         'BUNDLE_DIR_NAME': 'bundles/map/',
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-map-stats.json'),
