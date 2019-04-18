@@ -6,6 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Arguments
 ARG APP_HOME=/app
+ARG APP_BRANCH=master
 
 # Install dependencies
 RUN apt-get update -y
@@ -25,9 +26,6 @@ RUN apt-get install -y openssl
 RUN apt-get install -y vim sudo less
 RUN apt-get install -y uuid-dev
 RUN apt-get install -y libcurl4-openssl-dev
-
-# Install libwebsockets
-RUN apt-get install -y libwebsockets-dev
 
 # Install nginx
 RUN apt-get install -y nginx
@@ -54,6 +52,14 @@ RUN apt-get install -y cron
 
 # Install gettext
 RUN apt-get install -y gettext
+
+# Install npm
+RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN apt-get install -y nodejs
+
+# Install libwebsockets
+RUN apt-get install -y libwebsockets-dev
 
 # Install certbot
 RUN pip install --upgrade cryptography
@@ -170,6 +176,9 @@ RUN ldconfig
 
 # Init files
 COPY postgresql/init.psql $APP_HOME/init/init.psql
+
+# NPM packages
+RUN npm install
 
 # Init script
 COPY scripts/docker-entrypoint-init.sh /usr/local/bin/docker-entrypoint-init.sh
