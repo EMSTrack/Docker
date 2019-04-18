@@ -18,6 +18,13 @@ if [ -f $INIT_FILE ]; then
     echo "> Linking settings"
     ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
+    echo "> Creating webpackage bundles"
+    ./node_modules/.bin/webpack --config webpack-map-config.js
+    ./node_modules/.bin/webpack --config webpack-ambulance-config.js
+    ./node_modules/.bin/webpack --config webpack-point-widget-config.js
+    ./node_modules/.bin/webpack --config webpack-call-config.js
+    ./node_modules/.bin/webpack --config webpack-base-config.js
+
     echo "> Recovering static files"
     python manage.py collectstatic --no-input
     python manage.py compilemessages
@@ -82,6 +89,8 @@ sed -i'' \
     -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
     -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
+    -e 's/\[map_provider\]/'"$MAP_PROVIDER"'/g' \
+    -e 's/\[map_provider_token\]/'"$MAP_PROVIDER_TOKEN"'/g' \
     /etc/emstrack/settings.py
 ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 python manage.py makemigrations ambulance login hospital equipment
@@ -98,6 +107,11 @@ else
 fi
 python manage.py mqttpwfile
 mv pwfile /etc/mosquitto/passwd
+./node_modules/.bin/webpack --config webpack-map-config.js
+./node_modules/.bin/webpack --config webpack-ambulance-config.js
+./node_modules/.bin/webpack --config webpack-point-widget-config.js
+./node_modules/.bin/webpack --config webpack-call-config.js
+./node_modules/.bin/webpack --config webpack-base-config.js
 python manage.py collectstatic
 python manage.py compilemessages
 
