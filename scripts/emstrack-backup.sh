@@ -4,6 +4,6 @@ echo "> ATTENTION: stop services before backing up database to preserve integrit
 
 echo "> Backing up database"
 mkdir -p /etc/emstrack/fixtures
-python manage.py dumpdata > /etc/emstrack/fixtures/backup.json
+python manage.py dumpdata --natural > /etc/emstrack/fixtures/backup.json
 
 echo "> Done backing up database"
