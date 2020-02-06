@@ -109,7 +109,8 @@ RUN chown -R mosquitto:mosquitto /etc/emstrack/mosquitto
 # Download source code for mosquitto-auth-plug
 #RUN git clone https://github.com/EMSTrack/mosquitto-auth-plug
 WORKDIR /src
-RUN git clone https://github.com/jpmens/mosquitto-auth-plug
+#RUN git clone https://github.com/jpmens/mosquitto-auth-plug
+RUN git clone https://github.com/EMSTrack/mosquitto-auth-plug
 WORKDIR /src/mosquitto-auth-plug
 # RUN git checkout 481331fa57760bfe5934164c69784df70692bd65
 
