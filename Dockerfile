@@ -162,7 +162,7 @@ RUN chown www-data:www-data /var/log/django
 COPY etc /etc
 RUN mkdir -p /etc/emstrack/letsencrypt
 RUN ln -s /etc/emstrack/letsencrypt /etc/letsencrypt
-RUN ln -s /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
+# RUN ln -s /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
 # Setup mqttclient
 COPY supervisor/mqttclient.conf /etc/supervisor/conf.d/mqttclient.conf
