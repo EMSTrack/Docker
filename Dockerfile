@@ -39,13 +39,14 @@ RUN pip install --upgrade pip
 RUN pip install uwsgi
 
 # Install supervisor (make sure it runs on python2)
-RUN apt-get install -y supervisor
-RUN sed -i'' \
-        -e 's/bin\/python/bin\/python2/' \
-	/usr/bin/supervisord
-RUN sed -i'' \
-        -e 's/bin\/python/bin\/python2/' \
-	/usr/bin/supervisorctl
+#RUN apt-get install -y supervisor
+#RUN sed -i'' \
+#        -e 's/bin\/python/bin\/python2/' \
+#	/usr/bin/supervisord
+#RUN sed -i'' \
+#        -e 's/bin\/python/bin\/python2/' \
+#	/usr/bin/supervisorctl
+RUN pip install supervisor
 
 # Install cron
 RUN apt-get install -y cron
