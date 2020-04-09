@@ -1,13 +1,13 @@
 #!/bin/bash
 
-echo "> Reading settings from /etc/emstrack.defaults..."
-set -o allexport
-source /etc/emstrack/emstrack.defaults
-if [ -f /etc/emstrack/emstrack.init ]; then
-    echo "> Reading settings from /etc/emstrack/emstrack.init..."
-    source /etc/emstrack/emstrack.init
-fi
-set +o allexport
+#echo "> Reading settings from /etc/emstrack.defaults..."
+#set -o allexport
+#source /etc/emstrack/emstrack.defaults
+#if [ -f /etc/emstrack/emstrack.init ]; then
+#    echo "> Reading settings from /etc/emstrack/emstrack.init..."
+#    source /etc/emstrack/emstrack.init
+#fi
+#set +o allexport
 
 echo "APP_HOME=$APP_HOME"
 
@@ -16,7 +16,7 @@ if [ -f $INIT_FILE ]; then
     echo "> Container is already initialized"
 
     echo "> Linking settings"
-    ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
+    # ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
     echo "> Creating webpackage bundles"
     ./node_modules/.bin/webpack --config webpack-map-config.js
@@ -35,7 +35,7 @@ fi
 
 echo "> Initializing container..."
 
-# Setup mosquitto
+# Setup mosquitto (persistent)
 sed -i'' \
     -e 's/\[ip\]/'"$MQTT_BROKER_HTTP_IP"'/g' \
     -e 's/\[port\]/'"$MQTT_BROKER_HTTP_PORT"'/g' \
@@ -47,7 +47,7 @@ sed -i'' \
     -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
     /etc/mosquitto/conf.d/default.conf
 
-# Setup nginx
+# Setup nginx (persistent)
 sed -i'' \
     -e 's/\[port\]/'"$PORT"'/g' \
     -e 's/\[domain\]/'"$HOSTNAME"'/g' \
@@ -71,28 +71,28 @@ rm $APP_HOME/init/init.psql
 
 # Setup Django
 cd $APP_HOME
-sed -i'' \
-    -e 's/\[username\]/'"$DB_USERNAME"'/g' \
-    -e 's/\[password\]/'"$DB_PASSWORD"'/g' \
-    -e 's/\[database\]/'"$DB_DATABASE"'/g' \
-    -e 's/\[host\]/'"$DB_HOST"'/g' \
-    -e 's/\[secret-key\]/'"$DJANGO_SECRET_KEY"'/g' \
-    -e 's/\[hostname\]/'"$DJANGO_HOSTNAMES"'/g' \
-    -e 's/\[debug\]/'"$DJANGO_DEBUG"'/g' \
-    -e 's/\[mqtt-password\]/'"$MQTT_PASSWORD"'/g' \
-    -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
-    -e 's/\[mqtt-email\]/'"$MQTT_EMAIL"'/g' \
-    -e 's/\[mqtt-clientid\]/'"$MQTT_CLIENTID"'/g' \
-    -e 's/\[mqtt-broker-host\]/'"$MQTT_BROKER_HOST"'/g' \
-    -e 's/\[mqtt-broker-port\]/'"$MQTT_BROKER_PORT"'/g' \
-    -e 's/\[mqtt-broker-ssl-host\]/'"$MQTT_BROKER_SSL_HOST"'/g' \
-    -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
-    -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
-    -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
-    -e 's/\[map_provider\]/'"$MAP_PROVIDER"'/g' \
-    -e 's/\[map_provider_token\]/'"$MAP_PROVIDER_TOKEN"'/g' \
-    /etc/emstrack/settings.py
-ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
+#sed -i'' \
+#    -e 's/\[username\]/'"$DB_USERNAME"'/g' \
+#    -e 's/\[password\]/'"$DB_PASSWORD"'/g' \
+#    -e 's/\[database\]/'"$DB_DATABASE"'/g' \
+#    -e 's/\[host\]/'"$DB_HOST"'/g' \
+#    -e 's/\[secret-key\]/'"$DJANGO_SECRET_KEY"'/g' \
+#    -e 's/\[hostname\]/'"$DJANGO_HOSTNAMES"'/g' \
+#    -e 's/\[debug\]/'"$DJANGO_DEBUG"'/g' \
+#    -e 's/\[mqtt-password\]/'"$MQTT_PASSWORD"'/g' \
+#    -e 's/\[mqtt-username\]/'"$MQTT_USERNAME"'/g' \
+#    -e 's/\[mqtt-email\]/'"$MQTT_EMAIL"'/g' \
+#    -e 's/\[mqtt-clientid\]/'"$MQTT_CLIENTID"'/g' \
+#    -e 's/\[mqtt-broker-host\]/'"$MQTT_BROKER_HOST"'/g' \
+#    -e 's/\[mqtt-broker-port\]/'"$MQTT_BROKER_PORT"'/g' \
+#    -e 's/\[mqtt-broker-ssl-host\]/'"$MQTT_BROKER_SSL_HOST"'/g' \
+#    -e 's/\[mqtt-broker-ssl-port\]/'"$MQTT_BROKER_SSL_PORT"'/g' \
+#    -e 's/\[mqtt-broker-websockets-host\]/'"$MQTT_BROKER_WEBSOCKETS_HOST"'/g' \
+#    -e 's/\[mqtt-broker-websockets-port\]/'"$MQTT_BROKER_WEBSOCKETS_PORT"'/g' \
+#    -e 's/\[map_provider\]/'"$MAP_PROVIDER"'/g' \
+#    -e 's/\[map_provider_token\]/'"$MAP_PROVIDER_TOKEN"'/g' \
+#    /etc/emstrack/settings.py
+#ln -sf /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 python manage.py makemigrations ambulance login hospital equipment
 python manage.py migrate
 

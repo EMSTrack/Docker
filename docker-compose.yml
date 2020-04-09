@@ -20,6 +20,7 @@ services:
      - "8884:8884"
     volumes:
      - settings:/etc/emstrack
+     - mosquitto:/etc/mosquitto
      - nginx:/etc/nginx
      - logs:/var/log
     tty: true
@@ -27,5 +28,6 @@ services:
 volumes:
   pgdata:
   settings:
+  mosquitto:
   nginx:
   logs:
