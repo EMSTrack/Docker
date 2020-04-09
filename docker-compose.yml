@@ -10,6 +10,9 @@ services:
   emstrack:
     build:
       context: .
+    env_file:
+      - settings.env
+      - local.env
     ports:
      - "8000:8000"
      - "1883:1883"
