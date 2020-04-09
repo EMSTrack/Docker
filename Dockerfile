@@ -4,10 +4,6 @@ FROM ubuntu:18.04
 # Getting rid of debconf messages
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Arguments
-ARG APP_HOME=/app
-ARG APP_BRANCH=master
-
 # Install dependencies
 RUN apt-get update -y
 RUN apt-get install -y apt-utils git
@@ -128,6 +124,9 @@ RUN make; cp auth-plug.so /usr/local/lib
 # Clone application
 
 # Clone main repository and switch to branch
+ARG APP_HOME=/app
+ARG APP_BRANCH=master
+
 WORKDIR /src
 RUN git clone https://github.com/EMSTrack/WebServerAndClient
 RUN rm -fr $APP_HOME
