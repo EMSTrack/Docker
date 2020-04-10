@@ -165,6 +165,7 @@ RUN ln -s /etc/emstrack/letsencrypt /etc/letsencrypt
 # RUN ln -s /etc/emstrack/settings.py $APP_HOME/emstrack/settings.py
 
 # Setup mqttclient
+COPY supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY supervisor/mqttclient.conf /etc/supervisor/conf.d/mqttclient.conf
 
 # Configure nginx
