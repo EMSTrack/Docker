@@ -8,7 +8,7 @@ cleanup() {
     echo "Container stopped, cleaning up..."
 
     # stop supervisor
-    service supervisor stop
+    # service supervisor stop
 
     # stop nginx
     service nginx stop
@@ -73,7 +73,8 @@ if [ "$COMMAND" = 'basic' ] || [ "$COMMAND" = 'all' ] || [ "$COMMAND" = 'test' ]
 	echo "> Starting all services"
 	
 	echo "> Starting mqttclient"
-	service supervisor start
+	# service supervisor start
+	/etc/init.d/mqttclient start
 
 	echo "> All services up"
 
