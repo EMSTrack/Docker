@@ -1,171 +1,61 @@
-#! /bin/sh
-#
-# Downloaded from:
-# http://bazaar.launchpad.net/~ubuntu-branches/ubuntu/trusty/mqttclient/trusty/view/head:/debian/mqttclient.init
-#
-# skeleton	example file to build /etc/init.d/ scripts.
-#		This file should be used to construct scripts for /etc/init.d.
-#
-#		Written by Miquel van Smoorenburg <miquels@cistron.nl>.
-#		Modified for Debian
-#		by Ian Murdock <imurdock@gnu.ai.mit.edu>.
-#               Further changes by Javier Fernandez-Sanguino <jfs@debian.org>
-#               Modified by sbilly <superli.1980@gmail.com> Added mqttclientctl to status
-#
-# Version:	@(#)skeleton  1.9  26-Feb-2001  miquels@cistron.nl
-#
+#!/bin/bash
+
 ### BEGIN INIT INFO
-# Provides:          mqttclient
-# Required-Start:    $remote_fs $network $named
-# Required-Stop:     $remote_fs $network $named
+# Provides:          mqtt-client
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start/stop mqttclient
-# Description:       Start/stop mqttclient daemon and its configured
-#                    subprocesses.
+# Short-Description: Client for bridging mqtt with emstrack
+# Description:       Client for bridging mqtt with emstrack
 ### END INIT INFO
+
+# Change the next 3 lines to suit where you install your script and what you want to call it
+DAEMON=$APP_HOME/manage.py
+DAEMON_NAME=mqtt-client
+
+# Add any command line options for your daemon here
+DAEMON_OPTS="mqttclient"
+
+# This next line determines what user the script runs as.
+# Root generally not recommended but necessary if you are using the Raspberry Pi GPIO from Python.
+DAEMON_USER=root
+
+# The process ID of the script when it runs is stored here:
+PIDFILE=/var/run/$DAEMON_NAME.pid
 
 . /lib/lsb/init-functions
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/app/manage.py
-NAME=mqttclient
-DESC=mqttclient
-
-test -x $DAEMON || exit 0
-
-LOGDIR=/var/log/mqttclient
-PIDFILE=/var/run/$NAME.pid
-DODTIME=5                   # Time to wait for the server to die, in seconds
-                            # If this value is set too low you might not
-                            # let some servers to die gracefully and
-                            # 'restart' will not work
-
-# Include mqttclient defaults if available
-if [ -f /etc/default/mqttclient ] ; then
-	. /etc/default/mqttclient
-fi
-DAEMON_OPTS="mqttclient $DAEMON_OPTS"
-
-set -e
-
-running_pid()
-{
-    # Check if a given process pid's cmdline matches a given name
-    pid=$1
-    name=$2
-    [ -z "$pid" ] && return 1
-    [ ! -d /proc/$pid ] &&  return 1
-    (cat /proc/$pid/cmdline | tr "\000" "\n"|grep -q $name) || return 1
-    return 0
+do_start () {
+    log_daemon_msg "Starting system $DAEMON_NAME daemon"
+    start-stop-daemon --start --background --pidfile $PIDFILE --make-pidfile --user $DAEMON_USER --chuid $DAEMON_USER --startas $DAEMON -- $DAEMON_OPTS
+    log_end_msg $?
 }
-
-running()
-{
-# Check if the process is running looking at /proc
-# (works for all users)
-
-    # No pidfile, probably no daemon present
-    [ ! -f "$PIDFILE" ] && return 1
-    # Obtain the pid and check it against the binary name
-    pid=`cat $PIDFILE`
-    running_pid $pid $DAEMON || return 1
-    return 0
-}
-
-force_stop() {
-# Forcefully kill the process
-    [ ! -f "$PIDFILE" ] && return
-    if running ; then
-        kill -15 $pid
-        # Is it really dead?
-        [ -n "$DODTIME" ] && sleep "$DODTIME"s
-        if running ; then
-            kill -9 $pid
-            [ -n "$DODTIME" ] && sleep "$DODTIME"s
-            if running ; then
-                echo "Cannot kill $NAME (pid=$pid)!"
-                exit 1
-            fi
-        fi
-    fi
-    rm -f $PIDFILE
-    return 0
+do_stop () {
+    log_daemon_msg "Stopping system $DAEMON_NAME daemon"
+    start-stop-daemon --stop --pidfile $PIDFILE --retry 10
+    log_end_msg $?
 }
 
 case "$1" in
-  start)
-	echo -n "Starting $DESC: "
-	start-stop-daemon --start --quiet --pidfile $PIDFILE \
-		--startas $DAEMON -- $DAEMON_OPTS
-	test -f $PIDFILE || sleep 1
-        if running ; then
-            echo "$NAME."
-        else
-            echo " ERROR."
-        fi
-	;;
-  stop)
-	echo -n "Stopping $DESC: "
-	start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
-	echo "$NAME."
-	;;
-  force-stop)
-	echo -n "Forcefully stopping $DESC: "
-        force_stop
-        if ! running ; then
-            echo "$NAME."
-        else
-            echo " ERROR."
-        fi
-	;;
-  #reload)
-	#
-	#	If the daemon can reload its config files on the fly
-	#	for example by sending it SIGHUP, do it here.
-	#
-	#	If the daemon responds to changes in its config file
-	#	directly anyway, make this a do-nothing entry.
-	#
-	# echo "Reloading $DESC configuration files."
-	# start-stop-daemon --stop --signal 1 --quiet --pidfile \
-	#	/var/run/$NAME.pid --exec $DAEMON
-  #;;
-  force-reload)
-	#
-	#	If the "reload" option is implemented, move the "force-reload"
-	#	option to the "reload" entry above. If not, "force-reload" is
-	#	just the same as "restart" except that it does nothing if the
-	#   daemon isn't already running.
-	# check wether $DAEMON is running. If so, restart
-	start-stop-daemon --stop --test --quiet --pidfile $PIDFILE \
-        --startas $DAEMON \
-	&& $0 restart \
-	|| exit 0
-	;;
-  restart)
-    echo -n "Restarting $DESC: "
-    start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
-	[ -n "$DODTIME" ] && sleep $DODTIME
-	start-stop-daemon --start --quiet --pidfile $PIDFILE \
-		--startas $DAEMON -- $DAEMON_OPTS
-	echo "$NAME."
-	;;
-  status)
-    echo -n "$NAME is "
-    if running ;  then
-        echo "running"
-    else
-        echo " not running."
-        exit 1
-    fi
-    ;;
-  *)
-	N=/etc/init.d/$NAME
-	# echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
-	echo "Usage: $N {start|stop|restart|force-reload|status|force-stop}" >&2
-	exit 1
-	;;
-esac
 
+    start|stop)
+        do_${1}
+        ;;
+
+    restart|reload|force-reload)
+        do_stop
+        do_start
+        ;;
+
+    status)
+        status_of_proc "$DAEMON_NAME" "$DAEMON" && exit 0 || exit $?
+        ;;
+
+    *)
+        echo "Usage: /etc/init.d/$DAEMON_NAME {start|stop|restart|status}"
+        exit 1
+        ;;
+
+esac
 exit 0
