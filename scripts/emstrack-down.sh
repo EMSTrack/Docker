@@ -6,7 +6,8 @@ echo "> Stop nginx"
 service nginx stop
 
 echo "> Stopping mqttclient"
-supervisorctl stop mqttclient
+# supervisorctl stop mqttclient
+/etc/init.d/mqttclient stop
 
 echo "> Stop mosquitto"
 service mosquitto stop

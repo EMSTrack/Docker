@@ -27,8 +27,9 @@ if [ "$1" = 'all' ]; then
     echo "> Starting all services"
     
     echo "> Starting mqttclient"
-    service supervisor start
-    supervisorctl start mqttclient
+    #service supervisor start
+    #supervisorctl start mqttclient
+    /etc/init.d/mqttclient start
     
     echo "> All services up"
     
