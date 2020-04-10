@@ -208,6 +208,6 @@ COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Add VOLUME to allow backup of config, logs and databases
-VOLUME ["/etc/emstrack", "/etc/nginx", "/ect/mosquitto", "/var/log"]
+VOLUME ["/etc/emstrack", "/etc/nginx", "/etc/mosquitto", "/var/log"]
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["all"]
